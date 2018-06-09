@@ -10,6 +10,42 @@ Components.utils.import("resource://gre/modules/Promise.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
 (function (global) {
+  AnkUtils.Prefs.prefix = 'extensions.ankpixiv';
+  const Prefs = AnkUtils.Prefs;
+
+  AnkUtils.Locale.properties = 'chrome://ankpixiv/locale/ankpixiv.properties';
+  const Locale = AnkUtils.Locale;
+
+  const Modules = (() => { // {{{
+    const moduleURL  = 'chrome://ankpixiv/content/';
+    const moduleList = {
+      storage:  'ankstorage.js',
+      viewer:   'ankviewer.js',
+      context:  'ankcontext.js',
+      sitelist: 'anksitelist.js'
+    };
+    const moduleLoad = (m, scope = {}) => {
+      AnkUtils.logStringMessage('MODULE LOAD: ' + m);
+      try {
+        Services.scriptloader.loadSubScript(moduleURL + m, scope, 'UTF-8');
+        return scope;
+      } catch (e) {
+        Components.utils.reportError(e);
+        return {};
+      }
+    };
+    const Storage = moduleLoad(moduleList.storage).StorageModule;
+    const Viewer  = moduleLoad(moduleList.viewer).AnkViewer;
+    const Context = moduleLoad(moduleList.context).AnkContext;
+    let Sites = [];
+    let siteModuleList = moduleLoad(moduleList.sitelist).SiteModuleList;
+    for (const name of siteModuleList) {
+      const module = loadModule(name).SiteModule;
+      if (module)
+        Sites.push(module);
+    }
+    return { Storage, Viewer, Context, Sites };
+  })(); // }}}
 
   let AnkBase = {
 
@@ -17,78 +53,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * モジュールのロード＆初期化
      ********************************************************************************/
 
-    Prefs: (function () {
-      AnkUtils.Prefs.prefix = 'extensions.ankpixiv';
-      return AnkUtils.Prefs;
-    })(),
-
-    Locale: (function () {
-      AnkUtils.Locale.properties = 'chrome://ankpixiv/locale/ankpixiv.properties';
-      return AnkUtils.Locale;
-    })(),
-
-    Modules: (function () {
-      const LOAD_MODULES = {
-        STORAGE: 'ankstorage.js',
-        VIEWER: 'ankviewer.js',
-        CONTEXT: 'ankcontext.js',
-        SITELIST: 'anksitelist.js'
-      };
-
-      function loadScript(m, obj) {
-        try {
-          AnkUtils.logStringMessage('MODULE LOAD: ' + m);
-          let scope = obj || {};
-          Services.scriptloader.loadSubScript('chrome://ankpixiv/content/' + m, scope, 'UTF-8');
-          return scope;
-        }
-        catch (e) {
-          Components.utils.reportError(e);
-        }
-      }
-
-      return {
-        Storage: (function () {
-          if (LOAD_MODULES.STORAGE) {
-            let m = loadScript(LOAD_MODULES.STORAGE);
-            if (m && m.StorageModule)
-              return m.StorageModule;
-          }
-        })(),
-
-        Viewer : (function () {
-          if (LOAD_MODULES.VIEWER) {
-            let m = loadScript(LOAD_MODULES.VIEWER);
-            if (m && m.AnkViewer)
-              return m.AnkViewer;
-          }
-        })(),
-
-        Context : (function () {
-          if (LOAD_MODULES.CONTEXT) {
-            let m = loadScript(LOAD_MODULES.CONTEXT);
-            if (m && m.AnkContext)
-              return m.AnkContext;
-          }
-        })(),
-
-        Sites: (function () {
-          var sites = [];
-          if (LOAD_MODULES.SITELIST) {
-            let m = loadScript(LOAD_MODULES.SITELIST);
-            if (m && m.SiteModuleList) {
-              m.SiteModuleList.SITES.forEach(function (smn) {
-                let sm = loadScript(smn);
-                if (sm && sm.SiteModule) {
-                  sites.push(sm.SiteModule);
-                }
-              });
-            }
-          }
-          return sites;
-        })()
-      }
-    })(),
+    Prefs,
+    Locale,
+    Modules,
 
     /********************************************************************************
      * 定数
@@ -100,24 +67,24 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       TABLES: {
         histories: {
-          illust_id: { type:"string" },
-          member_id: { type:"string" },
+          illust_id:  { type:"string" },
+          member_id:  { type:"string" },
           local_path: { type:"string" },
-          title: { type:"string" },
-          tags: { type:"string" },
-          server: { type:"string" },
-          datetime: { type:"datetime" },
-          saved: { type:"boolean" },
-          filename: { type:"string" },
-          version: { type:"integer" },
-          comment: { type:"string" },
+          title:      { type:"string" },
+          tags:       { type:"string" },
+          server:     { type:"string" },
+          datetime:   { type:"datetime" },
+          saved:      { type:"boolean" },
+          filename:   { type:"string" },
+          version:    { type:"integer" },
+          comment:    { type:"string" },
           service_id: { type:"string" }
         },
         members: {
-          id: { type:"string" },
-          name: { type:"string" },
-          pixiv_id: { type:"string" },
-          version: { type:"integer" },
+          id:         { type:"string" },
+          name:       { type:"string" },
+          pixiv_id:   { type:"string" },
+          version:    { type:"integer" },
           service_id: { type:"string" }
         }
       },
@@ -213,7 +180,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
     DOWNLOAD_DISPLAY: {
       ID:           'ankpixiv-downloaded-display',
-
       DOWNLOADED:   'downloaded',
       USED:         'used',
       UPDATED:      'updated',
@@ -1822,7 +1788,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * 起動時の初期化
      */
     onInit: function () { // {{{
-      function firstRun () {
+      const firstRun = () => {
         if (AnkBase.Prefs.get('firstRun', true)) {
           AnkBase.Prefs.set('firstRun', false, 'boolean');
           return true;
@@ -2008,6 +1974,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
     Viewer: AnkBase.Modules.Viewer,
     Context: AnkBase.Modules.Context,
+    Modules: AnkBase.Modules,
 
     onInit: AnkBase.onInit,
     onDownloadButtonClick: AnkBase.onDownloadButtonClick,
@@ -2022,5 +1989,4 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
     expose: AnkBase.expose
   };
-
 })(this);

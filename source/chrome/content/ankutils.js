@@ -214,7 +214,7 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
     dumpError: function (error, doAlert, added) { // {{{
       let self = this;
-      let msg = "\n<<ANK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
+      let msg = "<<ANK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
       msg += self.errorToString(error) ;
       msg += (added ? added+"\n" : '');
       msg += ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
@@ -233,15 +233,14 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
     }, // }}}
 
     dump: function () { // {{{
-      let self = this;
-      if (!self.Prefs.get('debugMode'))
+      if (!AnkUtils.DEBUG)
         return;
 
       let msg = "";
       if (arguments.length <= 1) {
-        msg = "\n<<ANK " + arguments[0] + " >>\n";
+        msg = "<<ANK " + arguments[0] + " >>\n";
       } else {
-        msg = "\n<<ANK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
+        msg =  "<<ANK<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
         for (let i = 0; i < arguments.length; i++) {
           msg += "  " + arguments[i] + "\n";
         }
