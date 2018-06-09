@@ -220,12 +220,12 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
       AnkUtils.logStringMessage(msg);
 
-      try {
-        if (doAlert)
+      if (doAlert) {
+        try {
           window.alert(msg);
-      }
-      catch (e) {
-        Components.utils.reportError(e);
+        } catch (e) {
+          Components.utils.reportError(e);
+        }
       }
 
       return msg;

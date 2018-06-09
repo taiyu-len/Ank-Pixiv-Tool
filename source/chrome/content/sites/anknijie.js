@@ -351,7 +351,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         let context = new AnkBase.Context(self);
         let ev = AnkBase.createDownloadEvent(context, useDialog, debug);
         window.dispatchEvent(ev);
-      }).then(null).catch(e => AnkUtils.dumpError(e,true));
+      }).catch(e => AnkUtils.dumpError(e,true));
     },
 
     /*
@@ -474,7 +474,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
                   self.viewer.openViewer();
                 if (useClickDownload)
                   AnkBase.downloadCurrentImageAuto(self);
-              }).then(null).catch(e => AnkUtils.dumpError(e,true));
+              }).catch(e => AnkUtils.dumpError(e,true));
 
               if (useCapture) {
                 e.preventDefault();

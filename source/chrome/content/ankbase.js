@@ -793,7 +793,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           let status = yield AnkBase.downloadToRetryable(file, url, ref, AnkBase.DOWNLOAD_RETRY.MAX_TIMES);
           if (status != 200) {
             AnkUtils.dump('Delete invalid file. => ' + file.path);
-            yield OS.File.remove(file.path).then(null).catch(e => AnkUtils.dump('Failed to delete invalid file. => ' + e));
+            yield OS.File.remove(file.path).catch(e => AnkUtils.dump('Failed to delete invalid file. => ' + e));
             return status;
           }
 
@@ -823,7 +823,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         let encoder = new TextEncoder();
         let array = encoder.encode(text);
         yield OS.File.writeAtomic(file.path, array, { encoding:"utf-8", tmpPath:file.path+".tmp" });
-      }).then(null).catch(e => AnkUtils.dumpError(e));
+      }).catch(e => AnkUtils.dumpError(e));
     }, // }}}
 
     /*
@@ -872,7 +872,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         });
 
         module.downloadCurrentImage(useDialog, debug);
-      }).then(null).catch(e => AnkUtils.dumpError(e, true));
+      }).catch(e => AnkUtils.dumpError(e, true));
     },
 
     isDownloaded: function (illust_id, service_id) {
@@ -1254,7 +1254,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             let qa = [];
             qa.push({ type:'insert', table:'histories', set:download.history });
             yield AnkBase.Storage.update(AnkBase.Storage.getUpdateSQLs(qa));
-          }).then(null).catch(e => AnkUtils.dumpError(e,true));
+          }).catch(e => AnkUtils.dumpError(e,true));
         }
 
         if (AnkBase.Prefs.get('saveMeta', true))
@@ -1271,7 +1271,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         AnkBase.insertOrMarkToAllTabs(service_id, illust_id, function (curmod) {
           curmod.markDownloaded(illust_id, true);
         });
-      }).then(null).catch(function (e) { AnkUtils.dumpError(e); onError(e); });
+      }).catch(function (e) { AnkUtils.dumpError(e); onError(e); });
     }, // }}}
 
     /*
@@ -1716,7 +1716,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             }
           }
         }
-      }).then(null).catch(e => AnkUtils.dumpError(e));
+      }).catch(e => AnkUtils.dumpError(e));
     }, // }}}
 
     clearMarkedFlags: function () {
@@ -1796,7 +1796,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             null
           );
         } // }}}
-      }).then(null).catch(e => AnkUtils.dumpError(e));
+      }).catch(e => AnkUtils.dumpError(e));
     }, // }}}
 
     isUpdated: function (row, updated) {
@@ -1865,7 +1865,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           window.addEventListener('focus', AnkBase.onFocus, true);
           setInterval(e => AnkBase.cleanupDownload(), AnkBase.DOWNLOAD_THREAD.CLEANUP_INTERVAL);
         }
-      }).then(null).catch(function (e)  {
+      }).catch(function (e)  {
         AnkUtils.dumpError(e, true);
         AnkBase.changeToolbarIconReady.call(AnkBase, false, AnkBase.TOOLBAR_BUTTON.IMAGE);
       });

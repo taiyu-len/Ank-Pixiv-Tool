@@ -362,7 +362,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             }
             show();
             bigMode = !bigMode;
-          }).then(null).catch(e => AnkUtils.dumpError(e, true));
+          }).catch(e => AnkUtils.dumpError(e, true));
         }
         else {
           show();
