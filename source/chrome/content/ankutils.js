@@ -1,3 +1,4 @@
+"use strict";
 
 Components.utils.import("resource://gre/modules/Preferences.jsm");
 Components.utils.import("resource://gre/modules/Promise.jsm");

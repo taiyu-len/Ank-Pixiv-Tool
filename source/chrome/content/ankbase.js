@@ -1,3 +1,4 @@
+"use strict";
 
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/Preferences.jsm");
@@ -673,8 +674,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         // キャッシュ
         let cache = null;
         try {
-          with (getWebNavigation().sessionHistory)
-            cache = getEntryAtIndex(index, false).QueryInterface(Components.interfaces.nsISHEntry).postData;
+          let sh = getWebNavigation().sessionHistory;
+          cache = sh.getEntryAtIndex(index, false).QueryInterface(Components.interfaces.nsISHEntry).postData;
         } catch (e) {
           /* DO NOTHING */
         }
