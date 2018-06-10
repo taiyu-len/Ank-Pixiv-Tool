@@ -345,23 +345,22 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * ページの読み込み遅延を待ってから機能をインストールする
      */
     delayFunctionInstaller: function (proc, interval, counter, siteid, funcid) {
-      try {
-        if (!proc()) {
-          if (counter > 0) {
-            AnkUtils.dump('delay installation '+funcid+': '+siteid+' remains '+counter);
-            setTimeout(e => AnkBase.delayFunctionInstaller(proc, interval, counter-1, siteid, funcid), interval);
-          }
-          else {
-            AnkUtils.dump('installation failed '+funcid+': '+siteid);
+      Task.spawn(function*() {
+        const id = `${funcid}: ${siteid}`;
+        for (let i = 0; i < counter; ++i, interval*=1.2) {
+          if (proc()) {
+            AnkUtils.dump(`installed ${id}`);
+            return true;
+          } else if (i + 1 < counter) {
+            AnkUtils.dump(`delay installation ${id} [${i+1}/${counter}]`);
+            yield new Promise(r => setTimeout(r, interval));
+          } else {
+            AnkUtils.dump(`installation failed ${id}`);
           }
         }
-        else {
-          AnkUtils.dump('installed '+funcid+': '+siteid);
-          return true;
-        }
-      } catch (e) {
+      }).catch (e => {
         AnkUtils.dumpError(e);
-      } // }}}
+      });
     },
 
     /********************************************************************************
@@ -498,7 +497,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       return Task.spawn(function* () {
         return yield AnkBase.Storage.exists(AnkBase.getFileExistsQuery(filename));
       });
-    },
+    }, // }}}
 
     /*
      * newLocalFile

@@ -192,12 +192,10 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
     },
 
     dumpObject: function (obj) {
-      if (!AnkUtils.DEBUG)
+      if (!AnkUtils.DEBUG || !obj)
         return;
-
-      if (obj)
-        for (let p in obj)
-          console.log('* '+p+' = '+obj[p]);
+      for (let p in obj)
+        console.log('* '+p+' = '+obj[p]);
    },
 
     errorToString: function (error) { // {{{
