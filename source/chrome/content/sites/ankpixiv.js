@@ -562,31 +562,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /*
      * 評価する
      */
-    setRating: function (pt) { // {{{
-      function proc (pt) {
-        if (!self.in.medium)
-          throw 'not in illust page';
-        if (pt < 1 || 10 < pt)
-          throw 'out of range';
-
-        let rating = doc.defaultView.wrappedJSObject.pixiv.rating;
-        if (typeof rating.rate === 'number') {
-          rating.apply.call(rating, pt);
-          if (!AnkBase.Prefs.get('downloadWhenRate', false))
-            return true;
-          let point = AnkBase.Prefs.get('downloadRate', 10);
-          if (point <= pt)
-            AnkBase.downloadCurrentImage(self, AnkBase.Prefs.get('confirmExistingDownloadWhenAuto'));
-        } else {
-          return false;
-        }
-      }
-
-      var self = this;
-      var doc = this.curdoc;
-
-      return proc(pt);
-    }, // }}}
+    setRating: (pt) => true,
 
     /********************************************************************************
      *

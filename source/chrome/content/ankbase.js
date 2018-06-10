@@ -919,7 +919,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           // a. ダウンロードが正常終了したあと時間が経ったらキューを刈り取る
           // b. あまりにダウンロードが遅い場合に、キューから切り離して次に進む
           let m = AnkBase.zombieDownloads;
-          AnkUtils.dump('rise cleanup: queued='+AnkBase.downloading.pages.length+' zombie='+m.length);
+          if (AnkBase.downloading.pages.length + m.length > 0)
+            AnkUtils.dump('rise cleanup: queued='+AnkBase.downloading.pages.length+' zombie='+m.length);
           m.forEach(function (z) {
             let index = AnkBase.downloading.pages.indexOf(z);
             if (index != -1) {
