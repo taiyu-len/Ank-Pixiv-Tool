@@ -624,40 +624,14 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       call();
    }, // }}}
 
-   httpGET: function (url,referer,params) { // {{{
+   httpGETAsync: function (url, referer) { // {{{
      let self = this;
-     let post = !!params;
-     let text = null;
-     let xhr = new XMLHttpRequest();
-     xhr.open((post ? 'POST' : 'GET'), url, false);
-     try {
-       xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal).forceAllowThirdPartyCookie = self.Prefs.get('allowThirdPartyCookie', true);
-     } catch(ex) {
-       /* unsupported by this version of FF */
-     }
-     xhr.onreadystatechange = function () {
-       if (xhr.readyState == 4 && xhr.status == 200) {
-         text = xhr.responseText;
-       }
-     };
-     if (post)
-       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-     if (referer)
-       xhr.setRequestHeader('Referer', referer);
-     xhr.send(post ? params : null);
-
-     return text;
-   }, // }}}
-
-   httpGETAsync: function (url,referer,params) { // {{{
-     let self = this;
-     return new Promise(function (resolve, reject) {
-       let post = !!params;
-       let text = null;
+     return new Promise((resolve, reject) => {
        let xhr = new XMLHttpRequest();
-       xhr.open((post ? 'POST' : 'GET'), url, true);
+       xhr.open('GET', url, true);
        try {
-          xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal).forceAllowThirdPartyCookie = self.Prefs.get('allowThirdPartyCookie');
+         xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal)
+           .forceAllowThirdPartyCookie = self.Prefs.get('allowThirdPartyCookie');
        } catch(ex) {
          /* unsupported by this version of FF */
        }
@@ -668,14 +642,12 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
            reject(new Error(xhr.statusText));
          }
        };
-       xhr.error = function () {
+       xhr.onerror = function () {
          reject(new Error(xhr.statusText));
        };
-       if (post)
-         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
        if (referer)
          xhr.setRequestHeader('Referer', referer);
-       xhr.send(post ? params : null);
+       xhr.send(null);
      });
    }, // }}}
 
