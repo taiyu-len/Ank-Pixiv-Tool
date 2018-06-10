@@ -195,11 +195,11 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
         else if (q.type == 'update') {
           let values = {};
           let fps = [];
-          for (fieldName in q.set) {
+          for (let fieldName in q.set) {
             fps.push(fieldName+' = :'+fieldName);
             values[fieldName] = q.set[fieldName];
           }
-          for (fieldName in q.values) {
+          for (let fieldName in q.values) {
             values[fieldName] = q.values[fieldName];
           }
           qa.push({ query:'update '+q.table+' set '+fps.join()+' where '+q.cond, values:values });
@@ -208,7 +208,7 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
           let values = {};
           let fs = [];
           let ps = [];
-          for (fieldName in q.set) {
+          for (let fieldName in q.set) {
             fs.push(fieldName);
             ps.push(':'+fieldName);
             values[fieldName] = q.set[fieldName];

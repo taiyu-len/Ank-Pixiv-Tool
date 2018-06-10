@@ -40,7 +40,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     let Sites = [];
     let siteModuleList = moduleLoad(moduleList.sitelist).SiteModuleList;
     for (const name of siteModuleList) {
-      const module = loadModule(name).SiteModule;
+      const module = moduleLoad(name).SiteModule;
       if (module)
         Sites.push(module);
     }
@@ -352,7 +352,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             AnkUtils.dump(`installed ${id}`);
             return true;
           } else if (i + 1 < counter) {
-            AnkUtils.dump(`delay installation ${id} [${i+1}/${counter}]`);
+            // AnkUtils.dump(`delay installation ${id} [${i+1}/${counter}]`);
             yield new Promise(r => setTimeout(r, interval));
           } else {
             AnkUtils.dump(`installation failed ${id}`);
