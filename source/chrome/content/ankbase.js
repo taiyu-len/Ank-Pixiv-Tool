@@ -353,7 +353,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             return true;
           } else if (i + 1 < counter) {
             // AnkUtils.dump(`delay installation ${id} [${i+1}/${counter}]`);
-            yield new Promise(r => setTimeout(r, interval));
+            yield AnkUtils.sleep(interval);
           } else {
             AnkUtils.dump(`installation failed ${id}`);
           }
@@ -714,9 +714,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             return status;
 
           if (times < maxTimes) {
-            yield new Promise(function (resolve, reject) {
-              setTimeout(() => resolve(), times * AnkBase.DOWNLOAD_RETRY.INTERVAL);
-            });
+            yield AnkUtils.sleep(times * AnkBase.DOWNLOAD_RETRY.INTERVAL);
           }
         }
         return status;

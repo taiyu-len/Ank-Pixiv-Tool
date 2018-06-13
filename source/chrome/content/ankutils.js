@@ -362,6 +362,8 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
     * 色々
     ********************************************************************************/
 
+    sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
+
     popupAlert: function (iconPath, title, text, buttonEnabled, a, b) { // {{{
       let self = this;
       try {
@@ -511,72 +513,6 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
            return status;
        }
      });
-   }, // }}}
-
-   remoteFileExists: function (url, callback, redirect_loop) { // {{{
-     let self = this;
-
-     const REDIRECT_LOOP_MAX = 2;
-
-     let ios = self.ccgs("@mozilla.org/network/io-service;1", Components.interfaces.nsIIOService);
-     let ch = ios.newChannel(url, null, null).QueryInterface(Components.interfaces.nsIHttpChannel);;
-     ch.requestMethod = "HEAD";
-     ch.redirectionLimit = 0;
-     ch.open();
-
-     // TODO 利用されていないのでcallbackの処理は未実装
-
-     if (ch.responseStatus == 302) {
-       let redirect_to = ch.getResponseHeader('Location');
-       self.dump('redirect: from='+url+' to='+redirect_to);
-       return redirect_loop > REDIRECT_LOOP_MAX ? null : self.remoteFileExists(redirect_to, callback, ++redirect_loop);
-     }
-
-     return ch.requestSucceeded && [ch.responseStatus, url, ch.getResponseHeader('Content-Type')];
-   }, // }}}
-
-
-    /*
-     * remoteFileExistsRetryable
-     *    url:          チェックする
-     *    maxTimes:     最大チェック回数
-     *    callback:     function (exists) 存在していれば exists が真
-     */
-   remoteFileExistsRetryable: function (url, maxTimes, callback) { // {{{
-     let self = this;
-     function rfe (callback) {
-        let xhr = new XMLHttpRequest();
-        xhr.open('HEAD', url, true);
-        try {
-          xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal).forceAllowThirdPartyCookie = self.Prefs.get('allowThirdPartyCookie', true);
-        } catch(ex) {
-          /* unsupported by this version of FF */
-        }
-        xhr.onreadystatechange = function (e) {
-          if (xhr.readyState == 4)
-            callback(xhr.status);
-        };
-        xhr.send(null);
-      }
-
-      function call () {
-        rfe(function (statusCode) {
-          self.dump(statusCode);
-          if (statusCode == 200) {
-            return callback(true);
-          }
-          if (statusCode == 404) {
-            return callback(false);
-          }
-          ++times;
-          if (times < maxTimes)
-            return setTimeout(call, times * 10 * 1000);
-          return callback(false);
-        });
-      }
-
-      let times = 0;
-      call();
    }, // }}}
 
    httpGETAsync: function (url, referer) { // {{{
