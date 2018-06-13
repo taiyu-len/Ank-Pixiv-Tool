@@ -109,22 +109,6 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       return str.replace(/^\s*|\s*$/g, '');
     }, // }}}
 
-    /*
-     * join
-     *    list:   リスト
-     *    deli:   区切り文字
-     */
-    join: function (list, deli) { // {{{
-      if (!deli)
-        deli = ',';
-      let result = "";
-      for (let i = 0; i < list.length; i++) {
-        result += list[i].toString();
-        if (i < (list.length - 1))
-          result += deli;
-      }
-      return result;
-    }, // }}}
 
     padCharToLeft: function (str, len, c) { // {{{
       str = str.toString();
