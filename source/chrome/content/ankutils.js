@@ -22,24 +22,9 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       }
     })(), // }}}
 
-    get currentDocument () { // {{{
-      window.content.document;
-    }, // }}}
-
     /********************************************************************************
     * 文字列関数
     ********************************************************************************/
-
-    /*
-     * HTMLの実体参照を修正 TODO
-     */
-    decodeHtmlSpChars: function (s) { // {{{
-      return s.replace(/&amp;/g, '&')
-              .replace(/&quot;/g, '"')
-              .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>')
-              .replace(/&#(\d+);/g, function (_, n) { return String.fromCharCode(parseInt(n, 10)) });
-    }, // }}}
 
     /*
      * fixFilename
@@ -109,21 +94,7 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       return str.replace(/^\s*|\s*$/g, '');
     }, // }}}
 
-
-    padCharToLeft: function (str, len, c) { // {{{
-      str = str.toString();
-      if (str.length >= len)
-        return str;
-      for (let i = str.length; i < len; i++)
-        str = c + str;
-      return str;
-    }, // }}}
-
-    zeroPad: function(s, n) { // {{{
-      let self = this;
-      return s.toString().replace(new RegExp('^(.{0,'+(n-1)+'})$'),
-                                  function(s) { return self.zeroPad('0'+s, n); });
-    }, // }}}
+    zeroPad = (s, n) => "0".repeat(Math.max(0, n-s.length)) + s,
 
     toSQLDateTimeString: function (datetime) { // {{{
       let self = this;
@@ -692,34 +663,6 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       var doc = parser.parseFromString(source , "text/html");
       if(doc.getElementsByTagName("parsererror").length == 0)
         return doc;
-    }, // }}}
-
-    /*
-     * findNodeByXPath
-     *    xpath:
-     *    return: node
-     */
-    findNodeByXPath: function (xpath, _doc) { // {{{
-      let self = this;
-      let doc = _doc || self.currentDocument;
-      return doc.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-    }, // }}}
-
-    /*
-     * findNodesByXPath
-     *    xpath:
-     *    return: nodes
-     */
-    findNodesByXPath: function (xpath, array, _doc) { // {{{
-      let self = this;
-      let doc = _doc || self.currentDocument;
-      let nodes = doc.evaluate(xpath, doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-      if (!array)
-        return nodes;
-      let elem, result = [];
-      while (elem = nodes.iterateNext())
-        result.push(elem);
-      return result;
     }, // }}}
 
     createTempFile: function (name) { // {{{
