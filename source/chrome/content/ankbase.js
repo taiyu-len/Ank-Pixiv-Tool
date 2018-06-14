@@ -1898,7 +1898,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       event.stopPropagation();
       event.preventDefault();
 
-      let button = (typeof event.button == 'undefined') ? 0 : event.button;
+      let button = event.button ? event.button : 0;
       if (button == 2) {
         AnkBase.openPrefWindow();
         return;
@@ -1915,17 +1915,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           case 1: AnkBase.downloadCurrentImage(curmod, !useDialog); break;
         }
       } else {
-        let open = function (left) {
-          let tab = Preferences.get('extensions.tabmix.opentabfor.bookmarks', false);
-          if (!!left ^ !!tab)
-            AnkUtils.loadURI(curmod.URL);
-          else
-            AnkUtils.openTab(curmod.URL);
-        };
-        switch(button) {
-          case 0: open(true); break;
-          case 1: open(false); break;
-        }
+        AnkUtils.dump(`Unable to download image from current url '${location}'`);
       }
     }, // }}}
 
