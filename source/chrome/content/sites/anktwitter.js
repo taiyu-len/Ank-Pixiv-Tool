@@ -876,8 +876,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       // install now
       if (AnkBase.Prefs.get('markDownloaded', false)) {
-        AnkBase.delayFunctionInstaller(followExpansion, 500, 60, self.SITE_NAME, 'followExpansion');
-        AnkBase.delayFunctionInstaller(delayMarking, 500, 60, self.SITE_NAME, 'delayMarking');
+        AnkBase.delayFunctionInstaller(followExpansion, 500, 20, self.SITE_NAME, 'followExpansion');
+        AnkBase.delayFunctionInstaller(delayMarking, 500, 20, self.SITE_NAME, 'delayMarking');
       }
     } // }}}
 

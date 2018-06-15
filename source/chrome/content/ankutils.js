@@ -5,8 +5,7 @@ Components.utils.import("resource://gre/modules/Promise.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
-(function(global) {
-
+{
   var AnkUtils = {
     DEBUG: false,
 
@@ -94,7 +93,7 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       return str.replace(/^\s*|\s*$/g, '');
     }, // }}}
 
-    zeroPad = (s, n) => "0".repeat(Math.max(0, n-s.length)) + s,
+    zeroPad: (s, n) => "0".repeat(Math.max(0, n-s.length)) + s,
 
     toSQLDateTimeString: function (datetime) { // {{{
       let self = this;
@@ -362,25 +361,18 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
     * 色々
     ********************************************************************************/
 
-    sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
+    sleep: ms => new Promise(resolve => setTimeout(resolve, ms)),
 
     popupAlert: function (iconPath, title, text, buttonEnabled, a, b) { // {{{
-      let self = this;
       try {
-        if (navigator.platform.toLowerCase().indexOf('win') < 0)
+        if (navigator.platform.toLowerCase().includes('win'))
           iconPath = '';
-
-        const ALERT_SVC = self.ccgs("@mozilla.org/alerts-service;1",
-                                        Components.interfaces.nsIAlertsService);
+        const ALERT_SVC = AnkUtils.ccgs("@mozilla.org/alerts-service;1",
+          Components.interfaces.nsIAlertsService);
         return ALERT_SVC.showAlertNotification.apply(ALERT_SVC, arguments);
       } catch (e) {
         return;
       }
-    }, // }}}
-
-    simplePopupAlert: function (title, text) { // {{{
-      let self = this;
-      return self.popupAlert("", title, text, false, null, null);
     }, // }}}
 
     openTab: function (url, ref) { // {{{
@@ -728,8 +720,4 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
       };
     })()
   };
-
-  // --------
-  global["AnkUtils"] = AnkUtils;
-
-})(this);
+}
