@@ -19,62 +19,25 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     self._image;
 
     /********************************************************************************
-    * プロパティ
-    ********************************************************************************/
+     * プロパティ
+     ********************************************************************************/
 
     self.in = { // {{{
-      get manga () { // {{{
-        return (!!self.elements.illust.slideshowFrame || !!self.elements.illust.photoFrame);
-      }, // }}}
-
-      get medium () { // {{{
-        return self.in.illustPage;
-      }, // }}}
-
-      get illustPage () { // {{{
-        return self.info.illust.pageUrl.match(/^https?:\/\/[^/]+?\.tumblr\.com\/post\//) &&
-          (!!self.elements.illust.mediumImage || !!self.elements.illust.photoFrame);
-      }, // }}}
-
-      get listPage () {
-        return self.info.illust.pageUrl.match(/\/archive$/);
-      }
+      get manga () self.elements.illust.images.length > 1,
+      get medium () self.in.illustPage,
+      get illustPage () self.elements.illust.images.length > 0,
+      get listPage () self.info.illust.pageUrl.match(/\/archive$/),
     }; // }}}
 
     self.elements = (function () { // {{{
-      function query (q) {
-        return self.elements.doc.querySelector(q);
-      }
-
-      function queryAll (q) {
-        return self.elements.doc.querySelectorAll(q);
-      }
-
-      // 画像の面積を返す
-      // XXX 過度に長細いものなどは、1 とかにするほうがいいかも…
-      function getImageSize (e) {
-        return ((e.offsetHeight || 1) * (e.offsetWidth || 1));
-      }
-
-      function getLargestImage () {
-        let maxSize = 0, maxElement = null;
-
-        for (let root of Array.slice(arguments)) {
-          if (!root)
-            continue;
-          for (let it of root.querySelectorAll('img')) {
-            let size = getImageSize(it);
-            if (maxSize < size) {
-              maxSize = size;
-              maxElement = it;
-            }
-          }
-        }
-
-        return maxElement;
-      }
+      const query    = q => self.elements.doc.querySelector(q);
+      const queryAll = q => self.elements.doc.querySelectorAll(q);
 
       let illust =  {
+        get images () {
+          return Array.slice(queryAll('head > meta[property="og:image"]'));
+        },
+
         get date () {
           return query('.date > a') ||
             query('.date') ||
@@ -82,7 +45,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             query('.post-date a') ||
             query('.post-date');
         },
-
 
         get title () {
           return query('.copy > p') ||
@@ -131,6 +93,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return query('.l-content');
         },
 
+        get tags () {
+          return queryAll('.tags > a');
+        },
+
         // require for AnkBase
 
         get downloadedDisplayParent () {
@@ -154,21 +120,17 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         },
 
         get mediumImage () {
-          if (illust.slideshowFrame)
-            return illust.slideshowImage;
-          if (illust.photoFrame)
-            return illust.photoImage;
-          return getLargestImage(query('.post'), query('.photo'));
+          return query('.post-content img') || query('.post img');
         },
 
         get ads () {
           const Ads = [
-                       '#header',
-                       '#fb-root',
-                       '.nav-menu-wrapper',
-                       '.nav-menu-bg',
-                       '.header-wrapper',
-                       ];
+            '#header',
+            '#fb-root',
+            '.nav-menu-wrapper',
+            '.nav-menu-bg',
+            '.header-wrapper',
+          ];
 
           let a = [];
           Ads.forEach(q => AnkUtils.A(queryAll(q)).forEach(e => a.push(e)));
@@ -205,7 +167,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         },
 
         get tags () {
-          return [];
+          return Array.slice(self.elements.illust.tags).map(e => e.textContent);
         },
 
         get shortTags () {
@@ -303,142 +265,136 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * 定数
      ********************************************************************************/
 
-     URL:        'https://www.tumblr.com/',  // イラストページ以外でボタンを押したときに開くトップページのURL
-     DOMAIN:     'tumblr.com',               // CSSの適用対象となるドメイン
-     SERVICE_ID: 'TBR',                      // 履歴DBに登録するサイト識別子
-     SITE_NAME:  'Tumblr',                   // ?site-name?で置換されるサイト名のデフォルト値
+    URL:        'https://www.tumblr.com/',  // イラストページ以外でボタンを押したときに開くトップページのURL
+    DOMAIN:     'tumblr.com',               // CSSの適用対象となるドメイン
+    SERVICE_ID: 'TBR',                      // 履歴DBに登録するサイト識別子
+    SITE_NAME:  'Tumblr',                   // ?site-name?で置換されるサイト名のデフォルト値
 
-     EXPERIMENTAL: true,                     // 試験実装中のモジュール
+    EXPERIMENTAL: false,                     // 試験実装中のモジュール
 
-     /********************************************************************************
-      * 
-      ********************************************************************************/
+    /********************************************************************************
+     *
+     ********************************************************************************/
 
-     /**
-      * このモジュールの対応サイトかどうか
-      */
-     isSupported: function (doc) {
-       return doc.location.href.match(/^https?:\/\/[^/]*tumblr\.com\//);
-     },
+    /**
+     * このモジュールの対応サイトかどうか
+     */
+    isSupported: function (doc) {
+      return doc.location.href.match(/^https?:\/\/[^/]*tumblr\.com\//);
+    },
 
-     /**
-      * ファンクションのインストール
-      */
-     initFunctions: function () {
-       if (this._functionsInstalled)
-         return;
+    /**
+     * ファンクションのインストール
+     */
+    initFunctions: function () {
+      if (this._functionsInstalled)
+        return;
 
-       this._functionsInstalled = true;
+      this._functionsInstalled = true;
 
-       if (this.in.medium) {
-         this.installMediumPageFunctions();
-       }
-       else {
-         this.installListPageFunctions();
-       }
-     },
+      if (this.in.medium) {
+        this.installMediumPageFunctions();
+      }
+      else {
+        this.installListPageFunctions();
+      }
+    },
 
-     /**
-      * ダウンロード可能か
-      */
-     isDownloadable: function () {
-       if (!this._functionsInstalled)
-         return false;
+    /**
+     * ダウンロード可能か
+     */
+    isDownloadable: function () {
+      if (!this._functionsInstalled)
+        return false;
 
-       if (this.in.medium)
-         return { illust_id:this.getIllustId(), service_id:this.SERVICE_ID };
-     },
+      if (this.in.medium)
+        return { illust_id:this.getIllustId(), service_id:this.SERVICE_ID };
+    },
 
-     /**
-      * イラストID
-      */
-     getIllustId: function () {
-       let m = this.curdoc.location.href.match(/\.tumblr\.com\/post\/([^/]+?)(?:\?|\/|$)/);
-       return m && m[1];
-     },
+    /**
+     * イラストID
+     */
+    getIllustId: function () {
+      let m = this.curdoc.location.href.match(/\.tumblr\.com\/post\/([^/]+?)(?:\?|\/|$)/);
+      return m && m[1];
+    },
 
-     /**
-      * ダウンロード実行
-      */
-     downloadCurrentImage: function (useDialog, debug) {
-       let self = this;
-       Task.spawn(function () {
-         let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', false));
-         if (!image || image.images.length == 0) {
-           window.alert(AnkBase.Locale.get('cannotFindImages'));
-           return;
-         }
+    /**
+     * ダウンロード実行
+     */
+    downloadCurrentImage: function (useDialog, debug) {
+      let self = this;
+      Task.spawn(function () {
+        let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', true));
+        if (!image || image.images.length == 0) {
+          window.alert(AnkBase.Locale.get('cannotFindImages'));
+          return;
+        }
 
-         let context = new AnkBase.Context(self);
-         let ev = AnkBase.createDownloadEvent(context, useDialog, debug);
-         window.dispatchEvent(ev);
-       }).catch(e => AnkUtils.dumpError(e,true));
-     },
+        let context = new AnkBase.Context(self);
+        let ev = AnkBase.createDownloadEvent(context, useDialog, debug);
+        window.dispatchEvent(ev);
+      }).catch(e => AnkUtils.dumpError(e,true));
+    },
 
-     /*
-      * ダウンロード済みイラストにマーカーを付ける
-      *    node:     対象のノード (AutoPagerize などで追加されたノードのみに追加するためにあるよ)
-      *    force:    追加済みであっても、強制的にマークする
-      */
-     markDownloaded: function (node, force, ignorePref) { // {{{
-       const IsIllust = /\.tumblr\.com\/post\/([^/]+?)(?:\?|\/|$)/;
-       const Targets = [
-                         ['#portfolio  div.item > a', 1],   // 一覧
-                         ['.post_micro.is_photo a', 2],  // archive
-                       ];
+    /*
+     * ダウンロード済みイラストにマーカーを付ける
+     *    node:     対象のノード (AutoPagerize などで追加されたノードのみに追加するためにあるよ)
+     *    force:    追加済みであっても、強制的にマークする
+     */
+    markDownloaded: function (node, force, ignorePref) { // {{{
+      const IsIllust = /\.tumblr\.com\/post\/([^\/]+?)(?:\?|\/|$)/;
+      const Targets = [
+        ['#portfolio  div.item > a', 1],   // 一覧
+        ['.post_micro.is_photo a', 2],  // archive
+      ];
 
-       return AnkBase.markDownloaded(IsIllust, Targets, true, this, node, force, ignorePref);
-     }, // }}}
+      return AnkBase.markDownloaded(IsIllust, Targets, true, this, node, force, ignorePref);
+    }, // }}}
 
-     /*
-      * 評価する
-      */
-     setRating: function () { // {{{
-       return true;
-     },
+    /*
+     * 評価する
+     */
+    setRating: function () { // {{{
+      return true;
+    },
 
-     /********************************************************************************
-      * 
-      ********************************************************************************/
+    /********************************************************************************
+     *
+     ********************************************************************************/
 
-     /**
-      * 画像URLリストの取得
-      */
-     getImageUrlAsync: function (mangaOriginalSizeCheck) {
+    /**
+     * 画像URLリストの取得
+     */
+    getImageUrlAsync: function (mangaOriginalSizeCheck) {
 
-       let self = this;
+      let self = this;
 
-       return Task.spawn(function* () {
+      return Task.spawn(function* () {
 
-         // 取得済みならそのまま返す
-         if (self._image && self._image.images.length > 0)
-           return self._image;
+        // 取得済みならそのまま返す
+        if (self._image && self._image.images.length > 0)
+          return self._image;
 
-         function setSelectedImage (image) {
-           self._image = image;
-           return image;
-         }
+        function setSelectedImage (image) {
+          self._image = image;
+          return image;
+        }
+        let m = self.elements.illust.images;
+        if (m && m.length > 0) {
+          return setSelectedImage({ images: m.map(e => e.content.replace(/\d+.media/,"data").replace(/_\d+\.(.*)/,"_raw.$1")), facing:null });
+        }
+        else AnkUtils.dumpError("Failed to download", true);
+      });
+    },
 
-         if (self.elements.illust.slideshowFrame) {
-           let m = AnkUtils.A(self.elements.illust.slideshowSet).map(e => e.src);
-           return setSelectedImage({ images: m, facing: null });
-         }
-         else if (self.elements.illust.photoFrame) {
-           let m = AnkUtils.A(self.elements.illust.photoSet).map(e => e.src);
-           return setSelectedImage({ images: m, facing: null });
-         }
+    /********************************************************************************
+     *
+     ********************************************************************************/
 
-         return setSelectedImage({ images: [self.elements.illust.mediumImage.src], facing: null });
-       });
-     },
-
-     /********************************************************************************
-      * 
-      ********************************************************************************/
-
-     /*
-      * イラストページにviewerやダウンロードトリガーのインストールを行う
-      */
+    /*
+     * イラストページにviewerやダウンロードトリガーのインストールを行う
+     */
     installMediumPageFunctions: function () { // {{{
 
       let proc = function () {
