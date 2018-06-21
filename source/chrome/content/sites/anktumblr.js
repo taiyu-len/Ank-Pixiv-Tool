@@ -382,7 +382,13 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         }
         let m = self.elements.illust.images;
         if (m && m.length > 0) {
-          return setSelectedImage({ images: m.map(e => e.content.replace(/\d+.media/,"data").replace(/_\d+\.(.*)/,"_raw.$1")), facing:null });
+          return setSelectedImage({
+            images: m.map(e => e.content
+              .replace(/https/, "http")
+              .replace(/\d+.media/,"data")
+              .replace(/_\d+\.(.*)/,"_raw.$1")),
+            facing: null
+          });
         }
         else AnkUtils.dumpError("Failed to download", true);
       });
