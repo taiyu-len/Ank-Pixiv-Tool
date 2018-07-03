@@ -23,27 +23,14 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     ********************************************************************************/
 
     self.in = { // {{{
-      get manga () {// {{{
-        return (self.info.illust.mangaPages > 1);
-      }, // }}}
-
-      get medium () { // {{{
-        return self.in.illustPage;
-      }, // }}}
-
-      get illustPage () { // {{{
-        return self.info.illust.pageUrl.match(/^https?:\/\/(?:[^/]+\.)deviantart\.com\/art\//);
-      } // }}}
-    }; // }}}
+      get manga () self.info.illust.mangaPages > 1,
+      get medium () self.in.illustPage,
+      get illustPage () self.info.illust.pageUrl.match(/^https?:\/\/(?:[^/]+\.)deviantart\.com\/(?:[^/]*\/)art\//),
+    }; // }}}$
 
     self.elements = (function () { // {{{
-      function query (q) {
-        return self.elements.doc.querySelector(q)
-      }
-
-      function queryAll (q) {
-        return self.elements.doc.querySelectorAll(q)
-      }
+      const query    = q => self.elements.doc.querySelector(q);
+      const queryAll = q => self.elements.doc.querySelectorAll(q);
 
       function miniBrowseQuery (q) {
         return (illust.miniBrowseContainer || self.elements.doc).querySelector(q)
@@ -54,102 +41,52 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       }
 
       let illust =  {
-        get miniBrowseContainer () {
-          return query('.minibrowse-container.dev-page-container');
-        },
-
+        get miniBrowseContainer () query('.minibrowse-container.dev-page-container'),
         get datetime () {
           return Array.slice(miniBrowseQueryAll('.dev-metainfo-content.dev-metainfo-details > dl > dd > span')).filter(e => !!e.getAttribute('ts')).pop();
         },
 
-        get title () {
-          return miniBrowseQuery('.dev-title-container h1 >a');
-        },
-
-        get comment () {
-          return miniBrowseQuery('.dev-description .text.block');
-        },
-
-        get avatar () {
-          return miniBrowseQuery('.dev-title-container .avatar');
-        },
-
-        get userName () {
-          return miniBrowseQuery('.dev-title-container .username');
-        },
-
-        get memberLink () {
-          return illust.userName;
-        },
-
-        get tags () {
-          return miniBrowseQueryAll('.dev-title-container .dev-about-breadcrumb a');
-        },
-
+        get title () miniBrowseQuery('.dev-title-container h1 >a'),
+        get comment () miniBrowseQuery('.dev-description .text.block'),
+        get avatar () miniBrowseQuery('.dev-title-container .avatar'),
+        get userName () miniBrowseQuery('.dev-title-container .username'),
+        get memberLink () illust.userName,
+        get tags () miniBrowseQueryAll('.dev-title-container .dev-about-breadcrumb a'),
         // require for AnkBase
-
-        get downloadedDisplayParent () {
-          return miniBrowseQuery('.dev-title-container');
-        },
-
+        get downloadedDisplayParent () miniBrowseQuery('.dev-title-container'),
         // require for AnkBase.Viewer
 
-        get body () {
-          return query('body');
-        },
-
-        get wrapper () {
-          return query('#output');
-        },
-
-        get mediumImage () {
-          return miniBrowseQuery('.dev-content-normal');
-        },
-
-        get originalImage () {
-          return miniBrowseQuery('.dev-content-full');
-        },
-
+        get body () query('body'),
+        get wrapper () query('#output'),
+        get mediumImage () miniBrowseQuery('.dev-content-normal'),
+        get originalImage () miniBrowseQuery('.dev-content-full'),
         get ads () {
           let header1 = query('#overhead-collect');
-
           return ([]).concat(header1);
         }
       };
 
       return {
-        illust: illust,
-        get doc () {
-          return self.curdoc;
-        }
+        illust,
+        get doc () self.curdoc,
       };
     })(); // }}}
 
     self.info = (function () { // {{{
       let illust = {
-        get pageUrl () {
-          return self.elements.doc.location.href;
-        },
-
-        get id () {
-          return self.getIllustId();
-        },
-
+        get pageUrl () self.elements.doc.location.href,
+        get id () self.getIllustId(),
         get dateTime () {
           try {
             // FIXME timezone...
             let d = self.elements.illust.datetime.getAttribute('ts');
             return d && AnkUtils.getDecodedDateTime(new Date(parseInt(d, 10) * 1000));
-          }
-          catch (e) {
+          } catch (e) {
             AnkUtils.dumpError(e);
           }
         },
 
-        get size () {
-          return null;
-        },
-
+        get size () null,
         get tags () {
           let elem = self.elements.illust.tags;
           if (!elem)
@@ -168,89 +105,33 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return self.info.illust.tags.filter(it => (it.length <= limit));
         },
 
-        get tools () {
-          return null;
-        },
-
-        get width () {
-          return 0;
-        },
-
-        get height () {
-          return 0;
-        },
-
-        get server () {
-          return self.info.path.image.images[0].match(/^https?:\/\/([^\/\.]+)\./i)[1];
-        },
-
-        get referer () {
-          return self.info.illust.pageUrl;
-        },
-
-        get title () {
-          return AnkUtils.trim(self.elements.illust.title.textContent);
-        },
-
-        get comment () {
-          let e = self.elements.illust.comment;
-          return e ? AnkUtils.textContent(e) : '';
-        },
-
-        get R18 () {
-          return false;
-        },
-
-        get mangaPages () {
-          return 1;
-        },
-
-        get worksData () {
-          return null;
-        }
+        get tools () null,
+        get width () 0,
+        get height () 0,
+        get server () self.info.path.image.images[0].match(/^https?:\/\/([^\/\.]+)\./i)[1],
+        get referer () self.info.illust.pageUrl,
+        get title () AnkUtils.trim(self.elements.illust.title.textContent),
+        get comment () (self.elements.illust.comment||{}).textContent || '',
+        get R18 () false,
+        get mangaPages () 1,
+        get worksData () null,
       };
 
       let member = {
-        get id () {
-          return member.name;
-        },
-
-        get pixivId () {
-          return member.id;
-        },
-
-        get name () {
-          return AnkUtils.trim(self.elements.illust.userName.textContent);
-        },
-
-        get memoizedName () {
-          return null;
-        }
+        get id () member.name,
+        get pixivId () member.id,
+        get name () AnkUtils.trim(self.elements.illust.userName.textContent),
+        get memoizedName () null,
       };
 
       let path = {
-        get initDir () {
-          return AnkBase.Prefs.get('initialDirectory.' + self.SITE_NAME);
-        },
-
-        get ext () {
-          return AnkUtils.getFileExtension(path.image.images.length > 0 && path.image.images[0]);
-        },
-
-        get mangaIndexPage () {
-          return null;
-        },
-
-        get image () {
-          return self._image;
-        }
+        get initDir () AnkBase.Prefs.get('initialDirectory.' + self.SITE_NAME),
+        get ext () AnkUtils.getFileExtension(path.image.images.length > 0 && path.image.images[0]),
+        get mangaIndexPage () null,
+        get image () self._image,
       };
 
-      return {
-        illust: illust,
-        member: member,
-        path: path
-      };
+      return { illust, member, path };
     })(); // }}}
 
   };
@@ -341,10 +222,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * ダウンロード可能か
      */
     isDownloadable: function () {
-      if (!this._functionsInstalled)
-        return false;
-
-      if (this.in.medium)
+      if (this._functionsInstalled && this.in.medium)
         return {illust_id: this.getIllustId(), service_id: this.SERVICE_ID};
     },
 
