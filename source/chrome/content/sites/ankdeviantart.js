@@ -230,7 +230,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストID
      */
     getIllustId: function () {
-      let m = this.curdoc.location.href.match(/\/art\/(.+?)(?:\?|$)/);
+      let m = this.curdoc.location.href.match(/\/art\/.*-(\d+?)(?:\/|#?$)/);
       return m && m[1];
     },
 
