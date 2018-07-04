@@ -526,32 +526,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストID
      */
     getIllustId: function () {
-
-      let image = this._getImageUrl();
-
-      // twitter自身で保存しているものは画像ファイル名をillust_idにする
-      if (!image || image.images.length == 0)
-        return null;
-      let v = image.images[0];
-      if (v) {
-        let m = v.match(/^https?:\/\/pbs\.twimg\.com\/(?:media|tweet_video)\/([^/]+?)\./);   // 外部連携は扱わない
-        if (m)
-          return m[1];
-      }
-
-      // twitpic等の外部連携を利用している場合はtweetの短縮URLをillust_idにする
-      let e = this.elements.illust.largeLink;
-      if (!e)
-        return null;
-
-      v = e.href;  // ツイート
-      if (v) {
-        let m = v.match(/\/([^/]+)(?:\?|$)/);
-        if (m)
-          return m[1];
-      }
-
-      return null;
+      return this.illust.tweet.attributes["data-tweet-id"].value;
     },
 
     // FIXME イベント発火→ダウンロード開始の間にギャラリー移動があると目的のもと違う画像がダウンロードされる問題がある
