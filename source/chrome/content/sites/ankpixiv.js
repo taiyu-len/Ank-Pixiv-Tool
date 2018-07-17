@@ -91,13 +91,13 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         get largeLink () query("._1tR0cJT ._1-h8Se6"),
         get datetime ()  query("._3VLfD7p"),
         get size ()      query('.meta > li+li'), // XXX
-        get title ()     query('.TTmQ_bQ'),
-        get comment ()   query('._2awgH_j .EG8MDwA p'),
+        get title ()     query('._36RmBkO'),
+        get comment ()   query('.EG8MDwA p._3nJtUNj'),
         get userName ()  query('.JdrBYtD ._3RqJTSD'),
         get memberLink ()query('.JdrBYtD ._3RqJTSD'),
-        get tags ()      queryAll('._1tTPwGC'),
+        get tags ()      queryAll('._12GHAzp, .FNBxGia'),
         get tools ()     query('.tools'), // XXX
-        get R18 ()       query('._2wuGX9T > a[href*="R-18"]'),
+        get R18 ()       query('._3SAblVQ a[href*="R-18"]'),
         get thumbnail () query('.bookmark_modal_thumbnail'), // XXX
         get feedLink ()  query('.tab-feed, .column-header .tabs a[href^="/stacc/"]'), // XXX
 
