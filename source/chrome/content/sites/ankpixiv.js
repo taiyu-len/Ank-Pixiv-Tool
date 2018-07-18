@@ -4,7 +4,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
 (function (global) {
 
-  let AnkPixivModule = function (doc) {
+  function AnkPixivModule(doc) {
 
     var self = this;
 
@@ -89,7 +89,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       let illust = {
         get largeLink () query("._1tR0cJT ._1-h8Se6"),
-        get datetime ()  query("._3VLfD7p"),
+        get datetime ()  query("._3NX6JMB"),
         get size ()      query('.meta > li+li'), // XXX
         get title ()     query('._36RmBkO'),
         get comment ()   query('.EG8MDwA p._3nJtUNj'),
