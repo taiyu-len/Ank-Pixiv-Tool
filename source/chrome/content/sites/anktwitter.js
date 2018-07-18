@@ -312,6 +312,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       if (this._functionsInstalled)
         return;
 
+      var self = this;
+      var doc = this.curdoc;
+
       this._functionsInstalled = true;
 
       var inits = function () {
@@ -324,10 +327,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       };
 
       // Illust/List共通のFunction
-
-      var self = this;
-      var doc = this.curdoc;
-
       // ページ移動
       var contentChange = function () {
         let content = doc.querySelector('div.route-profile, div.route-permalink, div.route-home, div#doc');
@@ -418,7 +417,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストID
      */
     getIllustId: function () {
-      return self.elements.illust.tweet.attributes["data-tweet-id"].value;
+      return this.elements.illust.tweet.attributes["data-tweet-id"].value;
     },
 
     // FIXME イベント発火→ダウンロード開始の間にギャラリー移動があると目的のもと違う画像がダウンロードされる問題がある
@@ -475,7 +474,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * 画像URLリストの取得
      */
     getImageUrlAsync: function () {
-
       let self = this;
 
       return Task.spawn(function* () {
@@ -605,6 +603,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストページにviewerやダウンロードトリガーのインストールを行う
      */
     installMediumPageFunctions: function () { // {{{
+      var self = this;
+      var doc = this.curdoc;
 
       let proc = function () { // {{{
         // インストールに必用な各種要素
@@ -694,10 +694,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         self.markDownloaded(doc,true);
 
         return true;
-      };
-
-      var self = this;
-      var doc = this.curdoc;
+      }; // }}}
 
       // install now
       return AnkBase.delayFunctionInstaller(proc, 500, 60, self.SITE_NAME, '');
@@ -706,7 +703,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /*
      * リストページ用ファンクション
      */
-    installListPageFunctions: function () { /// {
+    installListPageFunctions: function () { // {{{
+      var self = this;
+      var doc = this.curdoc;
 
       let followExpansion = function () {
         let newGrid = self.elements.doc.querySelector('.AppContent-main .GridTimeline-items');
@@ -738,16 +737,12 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         return true;
       };
 
-      var self = this;
-      var doc = this.curdoc;
-
       // install now
       if (AnkBase.Prefs.get('markDownloaded', false)) {
         AnkBase.delayFunctionInstaller(followExpansion, 500, 20, self.SITE_NAME, 'followExpansion');
         AnkBase.delayFunctionInstaller(delayMarking, 500, 20, self.SITE_NAME, 'delayMarking');
       }
     } // }}}
-
   };
 
   // --------
