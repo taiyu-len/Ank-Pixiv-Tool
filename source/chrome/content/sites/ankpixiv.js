@@ -93,8 +93,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         get size ()      query('.meta > li+li'), // XXX
         get title ()     query('._36RmBkO'),
         get comment ()   query('.EG8MDwA p._3nJtUNj'),
-        get userName ()  query('.JdrBYtD ._3RqJTSD'),
-        get memberLink ()query('.JdrBYtD ._3RqJTSD'),
+        get userName ()  query('._2HApVVD'),
+        get memberLink ()query('._2HApVVD'),
         get tags ()      queryAll('._12GHAzp, .FNBxGia'),
         get tools ()     query('.tools'), // XXX
         get R18 ()       query('._3SAblVQ a[href*="R-18"]'),
@@ -249,14 +249,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       };
 
       let member = {
-        get id () {
-          let e = self.elements.illust.memberLink;
-          if (e) {
-            let m = e.href.match(/\/member\.php\?id=(\d+)/);
-            if (m)
-              return m[1];
-          }
-        },
+        get id () self.elements.illust.memberLink.href.match(/\/member\.php\?id=(\d+)/)[1],
 
         // XXX 遅延が酷いとavatar.srcで例外発生？
         get pixivId () {
@@ -266,10 +259,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             return m[1];
         },
 
-        get name () {
-          let e = self.elements.illust.userName;
-          return e && AnkUtils.trim(e.textContent);
-        }
+        get name () AnkUtils.trim(self.elements.illust.userName.textContent)
       };
 
       let path = {
