@@ -93,9 +93,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         get size ()      query('.meta > li+li'), // XXX
         get title ()     query('._36RmBkO'),
         get comment ()   query('.EG8MDwA p._3nJtUNj'),
-        get userName ()  query('._2HApVVD'),
-        get memberLink ()query('._2HApVVD'),
-        get tags ()      queryAll('._12GHAzp, .FNBxGia'),
+        get userName ()  query('.css-cwb1fq'),
+        get memberLink ()query('.css-cwb1fq'),
+        get tags ()      queryAll('._3SAblVQ > li'),
         get tools ()     query('.tools'), // XXX
         get R18 ()       query('._3SAblVQ a[href*="R-18"]'),
         get thumbnail () query('.bookmark_modal_thumbnail'), // XXX
@@ -148,9 +148,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       return {
         illust: illust,
-        get doc () {
-          return self.curdoc;
-        }
+        get doc () self.curdoc
       };
     })(); // }}}
 
@@ -158,11 +156,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       let illust = {
         get pageUrl () self.elements.doc.location.href,
         get id ()      self.getIllustId(),
-        get dateTime () {
-          let e = self.elements.illust.datetime;
-          return e && AnkUtils.decodeDateTimeText(e.textContent);
-        },
-
+        get dateTime () AnkUtils.decodeDateTimeText(self.elements.illust.datetime.textContent),
         get size () {
           let e = self.elements.illust.size;
           if (e) {
@@ -175,11 +169,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           }
         },
 
-        get tags () {
-          return AnkUtils.A(self.elements.illust.tags).
-            map(e =>AnkUtils.trim(e.textContent)) .
-            filter(s => s && s.length);
-        },
+        get tags ()
+          AnkUtils.A(self.elements.illust.tags)
+          .map(e =>AnkUtils.trim(e.textContent))
+          .filter(s => s && s.length),
 
         get shortTags () {
           let limit = AnkBase.Prefs.get('shortTagsMaxLength', 8);
@@ -191,16 +184,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return e && AnkUtils.trim(e.textContent);
         },
 
-        get width () {
-          let sz = illust.size;
-          return sz && sz.width;
-        },
-
-        get height () {
-          let sz = illust.size;
-          return sz && sz.height;
-        },
-
+        get width ()  (illust.size || {}).width,
+        get height () (illust.size || {}).height,
         get server () {
           let a = self.info.path.image.images;
           if (a.length > 0) {
@@ -224,16 +209,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return self.info.illust.pageUrl.replace(/mode=medium/, 'mode='+mode);
         },
 
-        get title () {
-          let e = self.elements.illust.title;
-          return e && AnkUtils.trim(e.textContent);
-        },
-
-        get comment () {
-          let e = self.elements.illust.comment;
-          return e && AnkUtils.textContent(e);
-        },
-
+        get title () AnkUtils.trim(self.elements.illust.title.textContent),
+        get comment () self.elements.illust.comment.textContent,
         get R18 () !!self.elements.illust.R18,
 
         get animationFrames() {
@@ -271,11 +248,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return AnkUtils.getFileExtension(path.image.images.length > 0 && path.image.images[0]);
         },
 
-        get mangaIndexPage () {
-          let e = self.elements.illust.largeLink;
-          return e && e.href;
-        },
-
+        get mangaIndexPage () self.elements.illust.largeLink.href,
         get ugokuIllustSrc () {
           try {
             let context = self.elements.doc.defaultView.wrappedJSObject.pixiv.context;
