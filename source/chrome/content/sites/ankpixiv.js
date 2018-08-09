@@ -89,9 +89,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       let illust = {
         get largeLink () query("._1tR0cJT ._1-h8Se6"),
-        get datetime ()  query("._3NX6JMB"),
+        get datetime ()  query(".css-d16zpw"),
         get size ()      query('.meta > li+li'), // XXX
-        get title ()     query('._36RmBkO'),
+        get title ()     query('.css-6njqb8'),
         get comment ()   query('.EG8MDwA p._3nJtUNj'),
         get userName ()  query('.css-cwb1fq'),
         get memberLink ()query('.css-cwb1fq'),
@@ -210,7 +210,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         },
 
         get title () AnkUtils.trim(self.elements.illust.title.textContent),
-        get comment () self.elements.illust.comment.textContent,
+        get comment () (self.elements.illust.comment || {}).textContent,
         get R18 () !!self.elements.illust.R18,
 
         get animationFrames() {
