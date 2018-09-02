@@ -38,7 +38,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       get medium () { // {{{
         let loc = self.info.illust.pageUrl;
-        return (
+        return !!(
           loc.match(/member_illust\.php\?/) &&
           loc.match(/(?:&|\?)mode=medium(?:&|$)/) &&
           loc.match(/(?:&|\?)illust_id=\d+(?:&|$)/)
@@ -88,16 +88,19 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       const queryAll = q => self.elements.doc.querySelectorAll(q);
 
       let illust = {
-        get largeLink () query("._1tR0cJT ._1-h8Se6"),
+        get largeLink () query("._1-h8Se6"),
         get datetime ()  query(".css-d16zpw"),
-        get size ()      query('.meta > li+li'), // XXX
         get title ()     query('.css-6njqb8'),
         get comment ()   query('.EG8MDwA p._3nJtUNj'),
         get userName ()  query('.css-cwb1fq'),
         get memberLink ()query('.css-cwb1fq'),
         get tags ()      queryAll('._3SAblVQ > li'),
-        get tools ()     query('.tools'), // XXX
         get R18 ()       query('._3SAblVQ a[href*="R-18"]'),
+        get imageCount   query('.gVu_bev'),
+        get bookmark     query('button.qtQbBkD'),
+        // Unused
+        get size ()      query('.meta > li+li'), // XXX
+        get tools ()     query('.tools'), // XXX
         get thumbnail () query('.bookmark_modal_thumbnail'), // XXX
         get feedLink ()  query('.tab-feed, .column-header .tabs a[href^="/stacc/"]'), // XXX
 
@@ -143,7 +146,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           Ads.forEach(q => AnkUtils.A(queryAll(q)).forEach(e => a.push(e)));
           return a;
         }
-
       };
 
       return {
@@ -174,10 +176,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           .map(e =>AnkUtils.trim(e.textContent))
           .filter(s => s && s.length),
 
-        get shortTags () {
-          let limit = AnkBase.Prefs.get('shortTagsMaxLength', 8);
-          return illust.tags.filter(it => (it.length <= limit));
-        },
+        get shortTags (), self.info.illust.tags(),
 
         get tools () {
           let e = self.elements.illust.tools;
@@ -190,25 +189,16 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           let a = self.info.path.image.images;
           if (a.length > 0) {
             let m = a[0].match(/^https?:\/\/([^\/\.]+)\./i);
-            if (m)
-              return m[1];
+            return m && m[1]
           }
         },
 
         get updated () {
           let e = self.elements.illust.thumbnail;
-          return self.decodeUpdated(e && e.getAttribute('data-src'));
+          return e && self.decodeUpdated(e.getAttribute('data-src'));
         },
 
-        get referer () {
-          let mode =
-            !self.in.manga                                   ? 'big' :
-            !AnkBase.Prefs.get('downloadOriginalSize', true) ? 'manga' :
-                                                               'manga_big&page=0'; // @see downloadFiles#downloadNext()
-
-          return self.info.illust.pageUrl.replace(/mode=medium/, 'mode='+mode);
-        },
-
+        get referer () self.info.illust.pageUrl,
         get title () AnkUtils.trim(self.elements.illust.title.textContent),
         get comment () (self.elements.illust.comment || {}).textContent,
         get R18 () !!self.elements.illust.R18,
@@ -610,7 +600,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストページにviewerやダウンロードトリガーのインストールを行う
      */
     installMediumPageFunctions: function () { // {{{
-
       let proc = function () {
         // インストールに必用な各種要素
         var body = self.elements.illust.body;
@@ -682,19 +671,11 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         };
 
         let addRatingEventListener = function () {
-          let point = AnkBase.Prefs.get('downloadRate', 10);
-          AnkUtils.A(doc.querySelectorAll('.rating')).forEach(function (e) {
-            e.addEventListener(
-              'click',
-              function () {
-                let klass = e.getAttribute('class', '');
-                let m = klass.match(/rate-(\d+)/);
-                if (m && (point <= parseInt(m[1], 10)))
-                  AnkBase.downloadCurrentImageAuto(self);
-              },
-              true
-            );
-          });
+          let bm = self.element.illust.bookmark;
+          if (bm) {
+            let fn = function() { AnkBase.downloadCurrentImageAuto(self); };
+            bm.addEventListener('click', fn);
+          }
         };
 
         // デバッグ用

@@ -263,9 +263,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         try {
           return curdoc._ankpixivid;
         }
-        catch (e) {
-          //
-        }
+        catch (e) {}
       })();
       for (let p in AnkBase.SiteModuleInstances) {
         try {
