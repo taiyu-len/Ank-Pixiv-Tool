@@ -1913,7 +1913,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           case 1: AnkBase.downloadCurrentImage(curmod, !useDialog); break;
         }
       } else {
-        AnkUtils.dump(`Unable to download image from current url '${location}'`);
+        let href = curmod.curdoc.location.href;
+        AnkUtils.dump(`Unable to download image from current url '${href}'`);
       }
     }, // }}}
 

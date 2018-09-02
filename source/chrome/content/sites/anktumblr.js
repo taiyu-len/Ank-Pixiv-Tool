@@ -390,7 +390,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             facing: null
           });
         }
-        else AnkUtils.dumpError("Failed to download", true);
+        else AnkUtils.dumpError(new Error("Failed to download"), true);
       });
     },
 
