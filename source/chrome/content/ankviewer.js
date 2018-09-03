@@ -96,8 +96,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             buttonPanel.style.opacity = buttonOpacity / 100.0;
             return false;   // please retry
           }
-        } catch (e if e instanceof TypeError) {
+        } catch (e) {
+          if (e instanceof TypeError) {
           // XXX for "can't access dead object"
+          } else throw e;
         }
         return true;
       }
@@ -347,7 +349,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       } else {
         // 画像のリストが取得できなければviewerを開かない
         if (!images || images.length === 0) {
-          Task.spawn(function () {
+          Task.spawn(function *() {
             let image = yield module.getImageUrlAsync(AnkBase.Prefs.get('viewOriginalSize', false));
             if (!image || image.images.length === 0)
               return; // server error.

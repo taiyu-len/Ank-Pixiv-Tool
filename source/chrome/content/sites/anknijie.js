@@ -342,7 +342,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      */
     downloadCurrentImage: function (useDialog, debug) {
       let self = this;
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', false));
         if (!image || image.images.length == 0) {
           window.alert(AnkBase.Locale.get('cannotFindImages'));
@@ -461,7 +461,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           medImg.addEventListener(
             'click',
             function (e) {
-              Task.spawn(function () {
+              Task.spawn(function *() {
                 // mangaIndexPageへのアクセスが複数回実行されないように、getImageUrlAsync()を一度実行してからopenViewer()とdownloadCurrentImageAuto()を順次実行する
                 let image = yield self.getImageUrlAsync();
                 if (!image || image.images.length == 0) {

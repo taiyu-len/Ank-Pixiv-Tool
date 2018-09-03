@@ -22,13 +22,19 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     * プロパティ
     ********************************************************************************/
 
-    self.in = { // {{{
-      get manga () self.info.illust.mangaPages > 1,
-      get medium () self.in.illustPage,
-      get illustPage () self.info.illust.pageUrl.match(/^https?:\/\/(?:[^/]+\.)deviantart\.com\/(?:[^/]*\/)art\//),
-    }; // }}}$
+    self.in = {
+      get manga () {
+        return self.info.illust.mangaPages > 1
+      },
+      get medium () {
+        return self.in.illustPage;
+      },
+      get illustPage () {
+        return self.info.illust.pageUrl.match(/^https?:\/\/(?:[^/]+\.)deviantart\.com\/(?:[^/]*\/)art\//);
+      },
+    };$
 
-    self.elements = (function () { // {{{
+    self.elements = (function () {
       const query    = q => self.elements.doc.querySelector(q);
       const queryAll = q => self.elements.doc.querySelectorAll(q);
 
@@ -41,25 +47,48 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       }
 
       let illust =  {
-        get miniBrowseContainer () query('.minibrowse-container.dev-page-container'),
+        get miniBrowseContainer () {
+          return query('.minibrowse-container.dev-page-container');
+        },
         get datetime () {
           return Array.slice(miniBrowseQueryAll('.dev-metainfo-content.dev-metainfo-details > dl > dd > span')).filter(e => !!e.getAttribute('ts')).pop();
         },
-
-        get title () miniBrowseQuery('.dev-title-container h1 >a'),
-        get comment () miniBrowseQuery('.dev-description .text.block'),
-        get avatar () miniBrowseQuery('.dev-title-container .avatar'),
-        get userName () miniBrowseQuery('.dev-title-container .username'),
-        get memberLink () illust.userName,
-        get tags () miniBrowseQueryAll('.dev-title-container .dev-about-breadcrumb a'),
+        get title () {
+          return miniBrowseQuery('.dev-title-container h1 >a');
+        },
+        get comment () {
+          return miniBrowseQuery('.dev-description .text.block');
+        },
+        get avatar () {
+          return miniBrowseQuery('.dev-title-container .avatar');
+        },
+        get userName () {
+          return miniBrowseQuery('.dev-title-container .username');
+        },
+        get memberLink () {
+          return illust.userName;
+        },
+        get tags () {
+          return miniBrowseQueryAll('.dev-title-container .dev-about-breadcrumb a');
+        },
         // require for AnkBase
-        get downloadedDisplayParent () miniBrowseQuery('.dev-title-container'),
+        get downloadedDisplayParent () {
+          return miniBrowseQuery('.dev-title-container');
+        },
         // require for AnkBase.Viewer
 
-        get body () query('body'),
-        get wrapper () query('#output'),
-        get mediumImage () miniBrowseQuery('.dev-content-normal'),
-        get originalImage () miniBrowseQuery('.dev-content-full'),
+        get body () {
+          return query('body');
+        },
+        get wrapper () {
+          return query('#output');
+        },
+        get mediumImage () {
+          return miniBrowseQuery('.dev-content-normal');
+        },
+        get originalImage () {
+          return miniBrowseQuery('.dev-content-full');
+        },
         get ads () {
           let header1 = query('#overhead-collect');
           return ([]).concat(header1);
@@ -68,14 +97,18 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       return {
         illust,
-        get doc () self.curdoc,
+        get doc () { return self.curdoc; },
       };
-    })(); // }}}
+    })();
 
-    self.info = (function () { // {{{
+    self.info = (function () {
       let illust = {
-        get pageUrl () self.elements.doc.location.href,
-        get id () self.getIllustId(),
+        get pageUrl () {
+          return self.elements.doc.location.href;
+        },
+        get id () {
+          return self.getIllustId();
+        },
         get dateTime () {
           try {
             // FIXME timezone...
@@ -86,7 +119,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           }
         },
 
-        get size () null,
+        get size () { return null; },
         get tags () {
           let elem = self.elements.illust.tags;
           if (!elem)
@@ -105,34 +138,70 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return self.info.illust.tags.filter(it => (it.length <= limit));
         },
 
-        get tools () null,
-        get width () 0,
-        get height () 0,
-        get server () self.info.path.image.images[0].match(/^https?:\/\/([^\/\.]+)\./i)[1],
-        get referer () self.info.illust.pageUrl,
-        get title () AnkUtils.trim(self.elements.illust.title.textContent),
-        get comment () (self.elements.illust.comment||{}).textContent || '',
-        get R18 () false,
-        get mangaPages () 1,
-        get worksData () null,
+        get tools () {
+          return null;
+        },
+        get width () {
+          return 0;
+        },
+        get height () {
+          return 0;
+        },
+        get server () {
+          return self.info.path.image.images[0].match(/^https?:\/\/([^\/\.]+)\./i)[1];
+        },
+        get referer () {
+          return self.info.illust.pageUrl;
+        },
+        get title () {
+          return AnkUtils.trim(self.elements.illust.title.textContent);
+        },
+        get comment () {
+          return (self.elements.illust.comment||{}).textContent || '';
+        },
+        get R18 () {
+          return false;
+        },
+        get mangaPages () {
+          return 1;
+        },
+        get worksData () {
+          return null;
+        },
       };
 
       let member = {
-        get id () member.name,
-        get pixivId () member.id,
-        get name () AnkUtils.trim(self.elements.illust.userName.textContent),
-        get memoizedName () null,
+        get id () {
+          return member.name;
+        },
+        get pixivId () {
+          return member.id;
+        },
+        get name () {
+          return AnkUtils.trim(self.elements.illust.userName.textContent);
+        },
+        get memoizedName () {
+          return null;
+        },
       };
 
       let path = {
-        get initDir () AnkBase.Prefs.get('initialDirectory.' + self.SITE_NAME),
-        get ext () AnkUtils.getFileExtension(path.image.images.length > 0 && path.image.images[0]),
-        get mangaIndexPage () null,
-        get image () self._image,
+        get initDir () {
+          return AnkBase.Prefs.get('initialDirectory.' + self.SITE_NAME);
+        },
+        get ext () {
+          return AnkUtils.getFileExtension(path.image.images.length > 0 && path.image.images[0]);
+        },
+        get mangaIndexPage () {
+          return null;
+        },
+        get image () {
+          return self._image;
+        },
       };
 
       return { illust, member, path };
-    })(); // }}}
+    })();
 
   };
 
@@ -239,7 +308,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      */
     downloadCurrentImage: function (useDialog, debug) {
       let self = this;
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', false));
         if (!image || image.images.length == 0) {
           window.alert(AnkBase.Locale.get('cannotFindImages'));
@@ -257,7 +326,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    node:     対象のノード (AutoPagerize などで追加されたノードのみに追加するためにあるよ)
      *    force:    追加済みであっても、強制的にマークする
      */
-    markDownloaded: function (node, force, ignorePref) { // {{{
+    markDownloaded: function (node, force, ignorePref) {
       const IsIllust = /\/art\/(.+?)(?:\?|$)/;
       const Targets = [
                         ['.dev-page-container .thumb > a', 1],
@@ -267,14 +336,14 @@ Components.utils.import("resource://gre/modules/Task.jsm");
                       ];
 
       return AnkBase.markDownloaded(IsIllust, Targets, true, this, node, force, ignorePref);
-    }, // }}}
+    },
 
     /*
      * 評価する
      */
-    setRating: function () { // {{{
+    setRating: function () {
       return true;
-    }, // }}}
+    },
 
     /********************************************************************************
      * 
@@ -309,18 +378,18 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /*
      * イラストページにviewerやダウンロードトリガーのインストールを行う
      */
-    installMediumPageFunctions: function () { // {{{
+    installMediumPageFunctions: function () {
 
-      let proc = function () { // {{{
+      let proc = function () {
         var body = self.elements.illust.body;
         var wrapper = self.elements.illust.wrapper;
         var medImg = self.elements.illust.mediumImage;
         var datetime = self.elements.illust.datetime;
 
         // 完全に読み込まれていないっぽいときは、遅延する
-        if (!(body && wrapper && medImg && datetime)) { // {{{
+        if (!(body && wrapper && medImg && datetime)) {
           return false;   // リトライしてほしい
-        } // }}}
+        }
 
         let addMiddleClickEventListener = function () {
           if (useViewer)
@@ -331,7 +400,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           medImg.addEventListener(
             'click',
             function (e) {
-              Task.spawn(function () {
+              Task.spawn(function *() {
                 // mangaIndexPageへのアクセスが複数回実行されないように、getImageUrlAsync()を一度実行してからopenViewer()とdownloadCurrentImageAuto()を順次実行する
                 let image = yield self.getImageUrlAsync();
                 if (!image || image.images.length == 0) {
@@ -393,14 +462,14 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         self.markDownloaded(doc,true);
 
         return true;
-      }; // }}}
+      };
 
       var self = this;
       var doc = this.curdoc;
 
       // install now
       return AnkBase.delayFunctionInstaller(proc, 500, 20, self.SITE_NAME, '');
-    }, // }}}
+    },
 
     /*
      * リストページ用ファンクション
@@ -425,7 +494,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       // install now
       return AnkBase.delayFunctionInstaller(delayMarking, 500, 20, self.SITE_NAME, 'delayMarking');
-    } // }}}
+    }
 
   };
 

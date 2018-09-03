@@ -16,7 +16,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
   AnkUtils.Locale.properties = 'chrome://ankpixiv/locale/ankpixiv.properties';
   const Locale = AnkUtils.Locale;
 
-  const Modules = (() => { // {{{
+  const Modules = (() => {
     const moduleURL  = 'chrome://ankpixiv/content/';
     const moduleList = {
       storage:  'ankstorage.js',
@@ -45,7 +45,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         Sites.push(module);
     }
     return { Storage, Viewer, Context, Sites };
-  })(); // }}}
+  })();
 
   let AnkBase = {
 
@@ -286,7 +286,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /**
      * サイトモジュールのインスタンスをカレントドキュメントにインストールする
      */
-    installSupportedModule: function (doc) { // {{{
+    installSupportedModule: function (doc) {
       for (let i=0; i<AnkBase.Modules.Sites.length; i++) {
         let module = AnkBase.Modules.Sites[i];
         if (AnkBase.isModuleEnabled(module.prototype.SERVICE_ID)) {
@@ -308,7 +308,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           }
         }
       }
-    }, // }}}
+    },
 
     /**
      * オプションダイアログにサイトモジュールのリストを渡す
@@ -368,9 +368,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /**
      * 設定ウィンドウ
      */
-    openPrefWindow: function () { // {{{
+    openPrefWindow: function () {
       window.openDialog("chrome://ankpixiv/content/options.xul", "Pref Dialog", "centerscreen,chrome,modal");
-    }, // }}}
+    },
 
     /*
      * showFilePicker
@@ -378,7 +378,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:          選択されたファイルのパス(nsILocalFile)
      * ファイル保存ダイアログを開く
      */
-    showFilePicker: function (prefInitDir, defaultFilename) { // {{{
+    showFilePicker: function (prefInitDir, defaultFilename) {
       const nsIFilePicker = Components.interfaces.nsIFilePicker;
       let filePicker = AnkUtils.ccci('@mozilla.org/filepicker;1', nsIFilePicker);
 
@@ -393,7 +393,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       let ret = filePicker.show();
       let ok = (ret == nsIFilePicker.returnOK) || (ret == nsIFilePicker.returnReplace);
       return ok && filePicker && filePicker.file;
-    }, // }}}
+    },
 
     /*
      * showFilePickerWithMeta
@@ -402,7 +402,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:          {image: nsILocalFile, meta: nsILocalFile}
      * ファイル保存ダイアログを開く
      */
-    showFilePickerWithMeta: function (prefInitDir, basename, ext, isFile) { // {{{
+    showFilePickerWithMeta: function (prefInitDir, basename, ext, isFile) {
       const PGNM_KEY = AnkUtils.SYS_SLASH+AnkBase.FILENAME_KEY.PAGE_NUMBER;
       let defaultFilename;
       let index = basename.indexOf(PGNM_KEY);
@@ -434,7 +434,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
                     mangaPath.replace(/\s*#page-number#/,'').replace(/\.\w+$/,'.txt')
               )
       };
-    }, // }}}
+    },
 
     /*
      * showDirectoryPicker
@@ -442,7 +442,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:      選択されたディレクトリ(nsIFilePicker)
      * ディレクトリ選択ダイアログを表示
      */
-    showDirectoryPicker: function (defaultPath) { // {{{
+    showDirectoryPicker: function (defaultPath) {
       try {
         let nsIFilePicker = Components.interfaces.nsIFilePicker;
         let filePicker = AnkUtils.ccci('@mozilla.org/filepicker;1', nsIFilePicker);
@@ -456,29 +456,29 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       catch (e) {
         AnkUtils.dumpError(e, true);
       }
-    }, // }}}
+    },
 
     /*
      * TODO
      * queryInitialDirectory
      * ユーザに初期ディレクトリの場所を尋ねる
      */
-    queryInitialDirectory: function () { // {{{
+    queryInitialDirectory: function () {
       let dir = AnkBase.showDirectoryPicker(AnkBase.Prefs.get('initialDirectory'));
       if (dir) {
         AnkBase.Prefs.set('initialDirectory', dir.filePath, 'string');
       }
       return dir;
-    }, // }}}
+    },
 
     /*
      * 右下にでるポップアップメッセージ
      *    title:    タイトル
      *    text:     メッセージ内容 */
-    popupAlert: function (title, text) { // {{{
+    popupAlert: function (title, text) {
       return AnkUtils.popupAlert("chrome://ankpixiv/content/statusbar-button.ico",
                                  title, text, false, "", null);
-    }, // }}}
+    },
 
 
     /********************************************************************************
@@ -491,11 +491,11 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:   boolean
      * 同じファイル名が存在するか？
      */
-    filenameExists: function (filename) { // {{{
+    filenameExists: function (filename) {
       return Task.spawn(function* () {
         return yield AnkBase.Storage.exists(AnkBase.getFileExistsQuery(filename));
       });
-    }, // }}}
+    },
 
     /*
      * newLocalFile
@@ -503,9 +503,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:   nsIFile
      * nsILocalFileを作成
      */
-    newLocalFile: function (path) { // {{{
+    newLocalFile: function (path) {
       return new FileUtils.File(AnkUtils.replaceFileSeparatorToSYS(path));
-    }, // }}}
+    },
 
     /*
      * newFileURI
@@ -513,9 +513,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:   nsIURI
      * nsILocalFileを作成
      */
-    newFileURI: function (path) { // {{{
+    newFileURI: function (path) {
       return Services.io.newFileURI(AnkBase.newLocalFile(path));
-    }, // }}}
+    },
 
     /*
      * setMangaPageNumber
@@ -555,7 +555,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * ファイルを保存すべきパスを返す
      * 設定によっては、ダイアログを表示する
      */
-    getSaveFilePath: function (prefInitDir, filenames, ext, useDialog, isFile, lastImgno, lastPageno) { // {{{
+    getSaveFilePath: function (prefInitDir, filenames, ext, useDialog, isFile, lastImgno, lastPageno) {
       return Task.spawn(function* () {
         function _file (initDir, basename, ext, isMeta) {
           // TODO File#join
@@ -580,7 +580,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           };
         }
 
-        function _exists (file) {
+        function _exists(file) {
           return Task.spawn(function* () {
             let path = isFile ? file.file.path : file.filepath;
             if (yield OS.File.exists(path))
@@ -614,7 +614,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
         return AnkBase.showFilePickerWithMeta(prefInitDir, filenames[0], ext, isFile);
       });
-    }, // }}}
+    },
 
     /*
      * downloadTo
@@ -698,7 +698,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    maxTimes:       リトライ最大回数
      * ファイルをダウンロードする
      */
-    downloadToRetryable: function (file, url, referer, maxTimes) { // {{{
+    downloadToRetryable: function (file, url, referer, maxTimes) {
       return Task.spawn(function* () {
         let status;
         for (let times=1; times<=maxTimes; times++ ) {
@@ -717,7 +717,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         }
         return status;
       });
-    }, // }}}
+    },
 
     /*
      * downloadMultipleFiles
@@ -728,7 +728,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    download:       ダウンロードキューエントリー
      * 複数のファイルをダウンロードする
      */
-    downloadImages: function (localdir, urls, fp, referer, download) { // {{{
+    downloadImages: function (localdir, urls, fp, referer, download) {
       return Task.spawn(function* () {
 
         const MAX_FILE = 1000;
@@ -768,7 +768,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
         return 200;
       });
-    }, // }}}
+    },
 
     /*
      * saveTextFile
@@ -776,8 +776,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    text:           String
      * テキストをローカルに保存します。
      */
-    saveTextFile: function (file, text) { // {{{
-      Task.spawn(function () {
+    saveTextFile: function (file, text) {
+      Task.spawn(function *() {
         AnkUtils.dump('SAVE => ' + file.path);
 
         yield AnkBase.makeDir(file.parent.path, { ignoreExisting:true, unixMode:0o755 });
@@ -786,7 +786,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         let array = encoder.encode(text);
         yield OS.File.writeAtomic(file.path, array, { encoding:"utf-8", tmpPath:file.path+".tmp" });
       }).catch(e => AnkUtils.dumpError(e));
-    }, // }}}
+    },
 
     /*
      * downloadCurrentImage
@@ -796,7 +796,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:               成功？
      * 現在表示されている画像を保存する
      */
-    downloadCurrentImage: function (module, useDialog, confirmDownloaded, debug) { // {{{
+    downloadCurrentImage: function (module, useDialog, confirmDownloaded, debug) {
       // 同一ページでも、表示中の状態によってダウンロードの可否が異なる場合がある
       let dw = module.isDownloadable();
       if (!dw)
@@ -814,7 +814,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         return;
       }
 
-      Task.spawn(function () {
+      Task.spawn(function *() {
         // ダウンロード済みかの確認
         let row = yield AnkBase.isDownloaded(dw.illust_id, dw.service_id);
         if (row) {
@@ -1078,7 +1078,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         AnkBase.removeDownload(download, AnkBase.DOWNLOAD_DISPLAY.FAILED);
       }
 
-      Task.spawn(function () {
+      Task.spawn(function *() {
         // FIXME memoized_nameの取得をここに移したため、meta.txtにmemoized_nameが記録されないようになってしまった
         // FIXME membersに重複エントリができる可能性がある。(重複削除してから)unique制約をつけるか、１トランザクション中にselect→insertするか等
         let row = yield AnkBase.Storage.exists(AnkBase.getMemberExistsQuery(download.context.info.member.id,download.context.SERVICE_ID));
@@ -1213,7 +1213,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             local_path: local_path,
             filename:   relPath
           };
-          yield Task.spawn(function () {
+          yield Task.spawn(function* () {
             let qa = [];
             qa.push({ type:'insert', table:'histories', set:download.history });
             yield AnkBase.Storage.update(AnkBase.Storage.getUpdateSQLs(qa));
@@ -1235,15 +1235,15 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           curmod.markDownloaded(illust_id, true);
         });
       }).catch(function (e) { AnkUtils.dumpError(e); onError(e); });
-    }, // }}}
+    },
 
     /*
      * downloadCurrentImageAuto
      * 自動的にダウンロードする場合はこっちを使う
      */
-    downloadCurrentImageAuto: function (module) { // {{{
+    downloadCurrentImageAuto: function (module) {
       AnkBase.downloadCurrentImage(module, undefined, AnkBase.Prefs.get('confirmExistingDownloadWhenAuto'));
-    }, // }}}
+    },
 
     /*
      * fixFileExt
@@ -1251,7 +1251,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    return:   修正した時は真、変更不要な場合は偽、形式不明・例外発生の場合はnull
      * 正しい拡張子に修正する。
      */
-    fixFileExt: function (file) { // {{{
+    fixFileExt: function (file) {
       return Task.spawn(function* () {
         const reExt = /\.[^\.]+$/;
         let m = file.path.match(reExt);
@@ -1284,10 +1284,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         AnkUtils.dump('Fix file ext: ' + file.path+' -> '+ext);
         return true;
       });
-    }, // }}}
+    },
 
     makeDir: function (path, options) {
-      return Task.spawn(function () {
+      return Task.spawn(function* () {
         let file = AnkBase.newLocalFile(path);
         if (!file)
           return;
@@ -1335,7 +1335,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     ********************************************************************************/
 
     // FIXME 件数が多い場合、selectを分割しないとfirefoxがフリーズする
-    getYourFantasy: function (top3) { // {{{
+    getYourFantasy: function (top3) {
       return Task.spawn(function* () {
         function R18 (s) {
           return (s == 'R-18');
@@ -1384,18 +1384,18 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
         return { table: table, sum: sum };
       });
-    }, // }}}
+    },
 
-    displayYourFantasy: function (module) { // {{{
+    displayYourFantasy: function (module) {
       // NOT IMPLEMENTED
-    }, // }}}
+    },
 
 
     /********************************************************************************
     * データベース関連
     ********************************************************************************/
 
-    updateDatabaseVersion: function () { // {{{
+    updateDatabaseVersion: function () {
       return Task.spawn(function* () {
         // version 6->7->8
         let ver = parseInt(AnkBase.DB_DEF.VERSION,10);
@@ -1421,7 +1421,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         yield AnkBase.Storage.update(AnkBase.Storage.getUpdateSQLs(qa));
       });
 
-    }, // }}}
+    },
 
     /********************************************************************************
     * ステータスバー
@@ -1447,22 +1447,22 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       }
     },
 
-    set toolbarText (text) { // {{{
+    set toolbarText (text) {
       let e = document.getElementById(AnkBase.TOOLBAR_BUTTON.TEXT);
       if (e) {
         e.value = text;
         e.collapsed = text.length == 0;
       }
       return text;
-    }, // }}}
+    },
 
-    updateToolbarText: function () { // {{{
+    updateToolbarText: function () {
       let queued = AnkBase.livingDownloads;
       let dp = queued.length;
       let remainImages = AnkBase.downloading.images;
       queued.forEach(d => remainImages -= d.downloaded);
       AnkBase.toolbarText = dp ? dp+'('+remainImages+'/'+AnkBase.downloading.images+')' : '';
-    }, // }}}
+    },
 
     changeToolbarIconEnabled: function (module, id) {
       let elem = document.getElementById(id);
@@ -1489,7 +1489,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     * スタイル
     ********************************************************************************/
 
-    registerSheet: function (style) { // {{{
+    registerSheet: function (style) {
       const domains = AnkBase.Modules.Sites.map(v => v.prototype.DOMAIN);
 
       AnkUtils.registerSheet(style || AnkBase.DEFAULT_STYLE, domains);
@@ -1504,7 +1504,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         function (e) AnkUtils.dumpError(e,true)
       );
       */
-    }, // }}}
+    },
 
 
     /********************************************************************************
@@ -1534,7 +1534,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /**
      *
      */
-    markDownloaded: function(IsIllust, Targets, overlay, module, node, force, ignorePref) { // {{{
+    markDownloaded: function(IsIllust, Targets, overlay, module, node, force, ignorePref) {
 
       if (!AnkBase.Prefs.get('markDownloaded', false) && !ignorePref)
         return null;
@@ -1580,16 +1580,16 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             }
           });
       });
-    }, // }}}
+    },
 
     /*
      *    overlay:    false  従来型のダウンロードマーキング
      *                true   ダウンロード済みアイコンのオーバーレイ表示（縦座標自動設定）
      *                number ダウンロード済みアイコンのオーバーレイ表示（縦座標=top: *number*px !important）
      */
-    markBoxNode: function (box, illust_id, module, overlay) { // {{{
+    markBoxNode: function (box, illust_id, module, overlay) {
 
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let row = yield AnkBase.Storage.exists(AnkBase.getIllustExistsQuery(illust_id, module.SERVICE_ID));
 
         //AnkUtils.dump('markBoxNode: '+illust_id+', '+!!row);
@@ -1680,7 +1680,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           }
         }
       }).catch(e => AnkUtils.dumpError(e));
-    }, // }}}
+    },
 
     clearMarkedFlags: function () {
       AnkUtils.A(window.gBrowser.mTabs).forEach(function (it) {
@@ -1696,7 +1696,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    R18:          イラストはR18か？
      *    mode:         メッセージ本文　※nullの場合は削除
      */
-    insertDownloadedDisplay: function (appendTo, R18, mode) { // {{{
+    insertDownloadedDisplay: function (appendTo, R18, mode) {
       if (!AnkBase.Prefs.get('displayDownloaded', true))
         return;
 
@@ -1732,13 +1732,13 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       div.appendChild(textNode);
       if (appendTo)
         appendTo.appendChild(div);
-    }, // }}}
+    },
 
-    insertDownloadedDisplayById: function (appendTo, R18, illust_id, service_id, updated) { // {{{
+    insertDownloadedDisplayById: function (appendTo, R18, illust_id, service_id, updated) {
       if (!appendTo)
         return;
 
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let row = yield AnkBase.Storage.exists(AnkBase.getIllustExistsQuery(illust_id, service_id));
         if (row) {
           AnkBase.insertDownloadedDisplay(
@@ -1746,7 +1746,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             R18,
             AnkBase.isUpdated(row, updated) ? AnkBase.DOWNLOAD_DISPLAY.UPDATED : AnkBase.DOWNLOAD_DISPLAY.DOWNLOADED
           );
-        } else if (AnkBase.isDownloading(illust_id, service_id)) { // {{{
+        } else if (AnkBase.isDownloading(illust_id, service_id)) {
           AnkBase.insertDownloadedDisplay(
             appendTo,
             false,
@@ -1758,9 +1758,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             R18,
             null
           );
-        } // }}}
+        }
       }).catch(e => AnkUtils.dumpError(e));
-    }, // }}}
+    },
 
     isUpdated: function (row, updated) {
       if (!row || !updated)
@@ -1783,7 +1783,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /**
      * 起動時の初期化
      */
-    onInit: function () { // {{{
+    onInit: function () {
       const firstRun = () => {
         if (AnkBase.Prefs.get('firstRun', true)) {
           AnkBase.Prefs.set('firstRun', false, 'boolean');
@@ -1810,7 +1810,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       let dbfile = AnkBase.Prefs.get('storageFilepath', 'ankpixiv.sqlite');
 
-      Task.spawn(function () {
+      Task.spawn(function *() {
         AnkBase.Storage = new AnkBase.Modules.Storage(dbfile, AnkBase.DB_DEF.TABLES, AnkBase.DB_DEF.OPTIONS, AnkBase.Prefs.get('debugStorage', false));
         // TODO Firefox35だとyieldが正しい値を返してこない
         let isOpened = yield AnkBase.Storage.openDatabase(function () {
@@ -1833,12 +1833,12 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         AnkBase.changeToolbarIconReady.call(AnkBase, false, AnkBase.TOOLBAR_BUTTON.IMAGE);
       });
 
-    }, // }}}
+    },
 
     /**
      * ページを移動した・タブを開いた等のイベントハンドラ
      */
-    onFocus: function (ev) { // {{{
+    onFocus: function (ev) {
       if (ev.type !== 'focus' && ev.type !== 'pageshow')
         return;
 
@@ -1887,12 +1887,12 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       catch (e) {
         AnkUtils.dumpError(e,false,location);
       }
-    }, // }}}
+    },
 
     /**
      * ツール―バーボタンクリックのイベントハンドラ
      */
-    onDownloadButtonClick: function (event) { // {{{
+    onDownloadButtonClick: function (event) {
       event.stopPropagation();
       event.preventDefault();
 
@@ -1916,7 +1916,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         let href = curmod.curdoc.location.href;
         AnkUtils.dump(`Unable to download image from current url '${href}'`);
       }
-    }, // }}}
+    },
 
     onContextMenu: function (ev) {
       let curmod = AnkBase.currentModule();
@@ -1936,20 +1936,20 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       /*
        * 他拡張からAnkPixiv.downloadCurrentImageが呼び出された時に実行する
        */
-      downloadCurrentImage: function (useDialog, confirmDownloaded, debug) { // {{{
+      downloadCurrentImage: function (useDialog, confirmDownloaded, debug) {
         let curmod = AnkBase.currentModule();
         if (curmod)
           return AnkBase.downloadCurrentImage(curmod, useDialog, confirmDownloaded, debug);
-      }, // }}}
+      },
 
       /*
        * 他拡張からAnkPixiv.rateが呼び出された時に実行する
        */
-      rate: function (pt) { // {{{
+      rate: function (pt) {
         let curmod = AnkBase.currentModule();
         if (curmod)
           return curmod.setRating(pt);
-      } // }}}
+      }
     }
   };
 

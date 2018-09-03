@@ -22,14 +22,22 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * プロパティ
      ********************************************************************************/
 
-    self.in = { // {{{
-      get manga () self.elements.illust.images.length > 1,
-      get medium () self.in.illustPage,
-      get illustPage () self.elements.illust.images.length > 0,
-      get listPage () self.info.illust.pageUrl.match(/\/archive$/),
-    }; // }}}
+    self.in = {
+      get manga () {
+        return self.elements.illust.images.length > 1;
+      },
+      get medium () {
+        return self.in.illustPage;
+      },
+      get illustPage () {
+        return self.elements.illust.images.length > 0;
+      },
+      get listPage () {
+        return self.info.illust.pageUrl.match(/\/archive$/);
+      },
+    };
 
-    self.elements = (function () { // {{{
+    self.elements = (function () {
       const query    = q => self.elements.doc.querySelector(q);
       const queryAll = q => self.elements.doc.querySelectorAll(q);
 
@@ -144,9 +152,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return self.curdoc;
         }
       };
-    })(); // }}}
+    })();
 
-    self.info = (function () { // {{{
+    self.info = (function () {
       let illust = {
         get pageUrl () {
           return self.elements.doc.location.href;
@@ -254,7 +262,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         member: member,
         path: path
       };
-    })(); // }}}
+    })();
 
   };
 
@@ -324,7 +332,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      */
     downloadCurrentImage: function (useDialog, debug) {
       let self = this;
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', true));
         if (!image || image.images.length == 0) {
           window.alert(AnkBase.Locale.get('cannotFindImages'));
@@ -342,7 +350,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      *    node:     対象のノード (AutoPagerize などで追加されたノードのみに追加するためにあるよ)
      *    force:    追加済みであっても、強制的にマークする
      */
-    markDownloaded: function (node, force, ignorePref) { // {{{
+    markDownloaded: function (node, force, ignorePref) {
       const IsIllust = /\.tumblr\.com\/post\/([^\/]+?)(?:\?|\/|$)/;
       const Targets = [
         ['#portfolio  div.item > a', 1],   // 一覧
@@ -350,12 +358,12 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       ];
 
       return AnkBase.markDownloaded(IsIllust, Targets, true, this, node, force, ignorePref);
-    }, // }}}
+    },
 
     /*
      * 評価する
      */
-    setRating: function () { // {{{
+    setRating: function () {
       return true;
     },
 
@@ -370,7 +378,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       let self = this;
 
-      return Task.spawn(function* () {
+      return Task.spawn(function () {
 
         // 取得済みならそのまま返す
         if (self._image && self._image.images.length > 0)
@@ -401,7 +409,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /*
      * イラストページにviewerやダウンロードトリガーのインストールを行う
      */
-    installMediumPageFunctions: function () { // {{{
+    installMediumPageFunctions: function () {
 
       let proc = function () {
         var body = self.elements.illust.body;
@@ -422,7 +430,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           medImg.addEventListener(
             'click',
             function (e) {
-              Task.spawn(function () {
+              Task.spawn(function *() {
                 // mangaIndexPageへのアクセスが複数回実行されないように、getImageUrlAsync()を一度実行してからopenViewer()とdownloadCurrentImageAuto()を順次実行する
                 let image = yield self.getImageUrlAsync();
                 if (!image || image.images.length == 0) {
@@ -468,12 +476,12 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       var doc = this.curdoc;
 
       return AnkBase.delayFunctionInstaller(proc, 500, 20, self.SITE_NAME, '');
-    }, // }}}
+    },
 
     /*
      * リストページ用ファンクション
      */
-    installListPageFunctions: function () { /// {
+    installListPageFunctions: function () {
       let followExpansion = function () {
         var archive = self.elements.illust.archiveContent;
 
@@ -507,7 +515,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       AnkBase.delayFunctionInstaller(followExpansion, 500, 30, self.SITE_NAME, 'followExpansion');
       return AnkBase.delayFunctionInstaller(delayMarking, 500, 30, self.SITE_NAME, 'delayMarking');
-    } // }}}
+    }
 
   };
 

@@ -18,22 +18,34 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     ********************************************************************************/
 
     self.in = { // {{{
-      get manga ()  self.info.illust.mangaPages > 1,
-      get medium () self.in.illustPage,
-      get illustPage ()
-        self.in.tweet ||  // ツイート
-        self.in.gallery,  // ポップアップ中
+      get manga () {
+        return self.info.illust.mangaPages > 1;
+      },
+      get medium () {
+        return self.in.illustPage;
+      },
+      get illustPage () {
+        return self.in.tweet ||  // ツイート
+        self.in.gallery;  // ポップアップ中
+      },
 
       /*
        * 以下はモジュールローカル部品
        */
-      get tweet () self.info.illust.pageUrl.match(/^https?:\/\/twitter\.com\/[^/]+\/status\//),
-      get illustTweet()
-        self.elements.illust.mediumImage ||  // イラスト
-        self.elements.illust.animatedGif ||  // GIF
-        self.elements.illust.photoFrame,     // 外部画像連携
-      get videoTweet() self.elements.illust.videoFrame,
-      get gallery ()   self.elements.illust.galleryEnabled,
+      get tweet () {
+        return self.info.illust.pageUrl.match(/^https?:\/\/twitter\.com\/[^/]+\/status\//);
+      },
+      get illustTweet() {
+        return self.elements.illust.mediumImage ||  // イラスト
+          self.elements.illust.animatedGif ||  // GIF
+          self.elements.illust.photoFrame;     // 外部画像連携
+      },
+      get videoTweet() {
+        return self.elements.illust.videoFrame;
+      },
+      get gallery () {
+        return self.elements.illust.galleryEnabled;
+      },
     }; // }}}
 
     const query    = (q) => self.curdoc.querySelector(q);
@@ -73,7 +85,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
       let illust =  {
         // 外部画像連携
-        get photoFrame () getCard2Frame('photo', 'summary_large_image'),
+        get photoFrame () {
+          return getCard2Frame('photo', 'summary_large_image');
+        },
         get photoImage () {
           var e = illust.photoFrame;
           if (e) {
@@ -103,7 +117,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return e && e.querySelectorAll('.js-adaptive-photo');
         },
 
-        get animatedGif () false,
+        get animatedGif () {
+          return false;
+        },
         get videoFrame () {
           let e = illust.tweet;
           return e && e.querySelector('.AdaptiveMedia-videoContainer .PlayableMedia--gif .PlayableMedia-player iframe');
@@ -114,23 +130,53 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return e && e.contentDocument.querySelector('video');
         },
 
-        get largeLink ()       queryEitherGorT('.twitter-timeline-link', '.twitter-timeline-link'),
-        get datetime ()        queryEitherGorT('.tweet-timestamp', 'span.metadata > span'),
-        get timestamp ()       queryEitherGorT('._timestamp', '._timestamp'),
-        get title ()           queryEitherGorT('.tweet-text', '.tweet-text'),
-        get comment ()         self.elements.illust.title,
-        get avatar ()          queryEitherGorT('.avatar', '.avatar'),
-        get userName ()        queryEitherGorT('.tweet', '.user-actions'),
-        get memberLink ()      queryEitherGorT('.account-group', '.account-group'),
-        get tags ()            null,
-        get tweet ()           query('.tweet.permalink-tweet'),
-        get gallery ()         query('.Gallery-content'),        // 画像ポップアップ
-        get galleryEnabled ()  query('.gallery-enabled'),
-        get galleryDatetime () query('.Gallery-content a.tweet-timestamp'),
+        get largeLink () {
+          return queryEitherGorT('.twitter-timeline-link', '.twitter-timeline-link');
+        },
+        get datetime () {
+          return queryEitherGorT('.tweet-timestamp', 'span.metadata > span');
+        },
+        get timestamp () {
+          return queryEitherGorT('._timestamp', '._timestamp');
+        },
+        get title () {
+          return queryEitherGorT('.tweet-text', '.tweet-text');
+        },
+        get comment () {
+          return self.elements.illust.title;
+        },
+        get avatar () {
+          return queryEitherGorT('.avatar', '.avatar');
+        },
+        get userName () {
+          return queryEitherGorT('.tweet', '.user-actions');
+        },
+        get memberLink () {
+          return queryEitherGorT('.account-group', '.account-group');
+        },
+        get tags () {
+          return null;
+        },
+        get tweet () {
+          return query('.tweet.permalink-tweet');
+        },
+        get gallery () {
+          return query('.Gallery-content');        // 画像ポップアップ
+        },
+        get galleryEnabled () {
+          return query('.gallery-enabled');
+        },
+        get galleryDatetime () {
+          return query('.Gallery-content a.tweet-timestamp');
+        },
 
         // require for AnkBase
-        get downloadedDisplayParent () queryEitherGorT('.stream-item-header', '.client-and-actions'),
-        get downloadedFilenameArea ()  query('.ank-pixiv-downloaded-filename-text'),
+        get downloadedDisplayParent () {
+          return queryEitherGorT('.stream-item-header', '.client-and-actions');
+        },
+        get downloadedFilenameArea () {
+          return query('.ank-pixiv-downloaded-filename-text');
+        },
 
         // require for AnkBase.Viewer
 
@@ -146,17 +192,25 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             return illust.mediaImage || illust.animatedGif || illust.photoImage;
         },
 
-        get wrapper () query('#page-outer'),
-        get ads () [],
+        get wrapper () {
+          return query('#page-outer');
+        },
+        get ads () {
+          return [];
+        }
       };
 
-      return { illust, get doc () self.curdoc };
+      return { illust, get doc () { return self.curdoc; }};
     })(); // }}}
 
     self.info = (function () { // {{{
       let illust = {
-        get pageUrl () self.elements.doc.location.href,
-        get id ()      self.getIllustId(),
+        get pageUrl () {
+          return self.elements.doc.location.href;
+        },
+        get id () {
+          return self.getIllustId();
+        },
         get externalUrl () {
           let e = self.elements.illust.largeLink;
           return e && e.getAttribute('data-expanded-url');
@@ -164,13 +218,13 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
         get dateTime () {
           let t = self.elements.illust.timestamp && self.elements.illust.timestamp.getAttribute('data-time');
-          if (t && /^\d+$/.test(t)) {
+          if (t && (/^\d+$/).test(t)) {
             let d = AnkUtils.getDecodedDateTime(new Date(parseInt(t)*1000));
             return d;
           }
 
           let ms = self.elements.illust.timestamp && self.elements.illust.timestamp.getAttribute('data-time-ms');
-          if (ms && /^\d+$/.test(ms)) {
+          if (ms && (/^\d+$/).test(ms)) {
             let d = AnkUtils.getDecodedDateTime(new Date(parseInt(ms)));
             return d;
           }
@@ -260,7 +314,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             let anchor = AnkUtils.getAnchor(path.image.images[0]);
             if (anchor)
               return AnkUtils.getFileExtension(anchor.pathname.match(/(\.\w+)(?::large|:orig)?$/) && RegExp.$1);
-          }
+          } else return undefined;
         },
 
         get mangaIndexPage () {
@@ -279,7 +333,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       };
     })();// }}}
 
-  };
+  }
 
 
   AnkPixivModule.prototype = {
@@ -427,7 +481,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      */
     downloadCurrentImage: function (useDialog, debug) {
       let self = this;
-      Task.spawn(function () {
+      Task.spawn(function *() {
         let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', false));
         if (!image || image.images.length == 0) {
           window.alert(AnkBase.Locale.get('cannotFindImages'));
@@ -651,7 +705,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           medImg.addEventListener(
             'click',
             function (e) {
-              Task.spawn(function () {
+              Task.spawn(function *() {
                 // mangaIndexPageへのアクセスが複数回実行されないように、getImageUrlAsync()を一度実行してからopenViewer()とdownloadCurrentImageAuto()を順次実行する
                 let image = yield self.getImageUrlAsync();
                 if (!image || image.images.length == 0) {
