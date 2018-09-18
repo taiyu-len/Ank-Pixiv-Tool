@@ -18,6 +18,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
     self._image = {
       thumbnail: null,
+      animationFrames: undefined,
       original: null
     };
 
@@ -271,15 +272,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         },
 
         get animationFrames () {
-          try {
-            let ugoku = self.elements.doc.defaultView.wrappedJSObject.pixiv.context.ugokuIllustData;
-            if (ugoku) {
-              let frames = ugoku.frames;
-              if (frames)
-                return frames.map(o => o.file+','+o.delay);
-            }
-          } catch(e) {}
-          return undefined;
+          return self._image.animationFrames;
         }
       };
 
@@ -501,6 +494,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             let json = JSON.parse(yield AnkUtils.httpGETAsync(url, referer));
             if (json.error)
               throw new Error(`${url}:${json.message}`);
+            if (self.in.ugoira) {
+              self._image.animationFrame = json.body.frames;
+            }
             return setSelectedImage({
               original: {
                 images: fn(json.body),
@@ -512,7 +508,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
             AnkUtils.dumpError(e, true);
             return null;
           }
-        })
+        });
       });
     },
 
@@ -537,7 +533,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         let addRatingEventListener = function () {
           let bm = self.element.illust.bookmark;
           if (bm) {
-            let fn = function() { AnkBase.downloadCurrentImageAuto(self); };
+            let fn = function () { AnkBase.downloadCurrentImageAuto(self); };
             bm.addEventListener('click', fn);
           }
         };
