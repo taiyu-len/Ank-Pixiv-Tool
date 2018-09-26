@@ -87,28 +87,28 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return query("._1-h8Se6");
         },
         get datetime () {
-          return query(".css-d16zpw");
+          return query(".css-z1xlvz");
         },
         get title () {
-          return query('.css-6njqb8');
+          return query('.css-pz9mo6');
         },
         get comment () {
           return query('.EG8MDwA p._3nJtUNj');
         },
         get userName () {
-          return query('.css-cwb1fq');
+          return query('.css-puy71y');
         },
         get memberLink () {
-          return query('.css-cwb1fq');
+          return query('.css-puy71y');
         },
         get tags () {
-          return queryAll('._3SAblVQ > li');
+          return queryAll('ul._3SAblVQ > li');
         },
         get R18 () {
           return query('._3SAblVQ a[href*="R-18"]');
         },
         get pages () {
-          return query('.gVu_bev');
+          return query('.css-1x6h10p');
         },
         get bookmark () {
           return query('button.qtQbBkD');
@@ -167,10 +167,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return queryAll('body')[0];
         },
         get mediumImage () {
-          return query('._1tR0cJT');
+          return query('.css-1l839qm');
         },
         get imageOverlay () {
-          return query('._1tR0cJT');
+          return query('.css-1l839qm');
         },
         get openCaption () {
           return query('._1MskjZd');
@@ -262,7 +262,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return self.info.illust.pageUrl;
         },
         get title () {
-          return AnkUtils.trim(self.elements.illust.title.textContent);
+          let e = self.elements.illust.title;
+          if (!e) window.alert("No Title or Invalid CSS");
+          return e ? AnkUtils.trim(e.textContent) : "無題";
         },
         get comment () {
           return (self.elements.illust.comment || {}).textContent;
