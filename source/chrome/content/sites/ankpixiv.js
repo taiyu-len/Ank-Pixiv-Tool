@@ -83,98 +83,39 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       const queryAll = q => self.elements.doc.querySelectorAll(q);
 
       let illust = {
-        get largeLink () {
-          return query("._1-h8Se6");
-        },
-        get datetime () {
-          return query(".css-z1xlvz");
-        },
-        get title () {
-          return query('.css-pz9mo6');
-        },
-        get comment () {
-          return query('.EG8MDwA p._3nJtUNj');
-        },
-        get userName () {
-          return query('.css-puy71y');
-        },
-        get memberLink () {
-          return query('.css-puy71y');
-        },
-        get tags () {
-          return queryAll('ul._3SAblVQ > li');
-        },
-        get R18 () {
-          return query('._3SAblVQ a[href*="R-18"]');
-        },
-        get pages () {
-          return query('.css-1x6h10p');
-        },
-        get bookmark () {
-          return query('button.qtQbBkD');
-        },
+        get datetime ()   { return query(".sc-dRCTWM.jCIBGt"); },
+        get title ()      { return query('.sc-cgHJcJ.bVCFdy'); },
+        get comment ()    { return query('.sc-eNPDpu.japtga'); },
+        get userName ()   { return query('.sc-eNNmBn.idhvWW'); },
+        get memberLink () { return query('.sc-eNNmBn.idhvWW'); },
+        get tags ()       { return queryAll('ul._3SAblVQ > li'); },
+        get R18 ()        { return query('._3SAblVQ a[href*="R-18"]'); },
         // Unused
-        get size () {
-          return query('.meta > li+li');
-        }, // XXX
-        get tools () {
-          return query('.tools');
-        }, // XXX
-        get thumbnail () {
-          return query('.bookmark_modal_thumbnail');
-        }, // XXX
-        get feedLink () {
-          return query('.tab-feed, .column-header .tabs a[href^="/stacc/"]');
-        }, // XXX
+        get size ()      { return query('.meta > li+li'); },
+        get tools ()     { return query('.tools'); },
+        get thumbnail () { return query('.bookmark_modal_thumbnail'); },
+        get feedLink ()  { return query('.tab-feed, .column-header .tabs a[href^="/stacc/"]'); },
 
         // この作品をブックマークした人はこんな作品もブックマークしています
         // あなたのブックマークタグ「○○」へのおすすめ作品
-        get recommendList () {
-          return query('#illust-recommend ._image-items');
-        },
-        get ugoiraContainer () {
-          return query('.Jj6cgRQ._19hYROS');
-        },
-        get feedList () {
-          return query('#stacc_timeline, #stacc_center_timeline');
-        },
-        get rankingList () {
-          return query('.ranking-items');
-        },
-        get autoPagerizeTarget () {
-          return queryAll('._unit');
-        },
-        get nextLink () {
-          return query('._3FJ1FEb.Dn9Rstg');
-        },
-        get prevLink () {
-          return query('._3FJ1FEb.WTz_C1E');
-        },
-        get uiLayoutWest () {
-          return query('.ui-layout-west');
-        },
+        get recommendList ()      { return query('#illust-recommend ._image-items'); },
+        get ugoiraContainer ()    { return query('.Jj6cgRQ._19hYROS'); },
+        get feedList ()           { return query('#stacc_timeline, #stacc_center_timeline'); },
+        get rankingList ()        { return query('.ranking-items'); },
+        get autoPagerizeTarget () { return queryAll('._unit'); },
+        get nextLink ()           { return query('._3FJ1FEb.Dn9Rstg'); },
+        get prevLink ()           { return query('._3FJ1FEb.WTz_C1E'); },
+        get uiLayoutWest ()       { return query('.ui-layout-west'); },
 
         // require for AnkBase
-        get downloadedDisplayParent () {
-          return query('._2qAWahw');
-        },
-        get downloadedFilenameArea () {
-          return query('.ank-pixiv-downloaded-filename-text');
-        },
+        get downloadedDisplayParent () { return query('._2qAWahw'); },
+        get downloadedFilenameArea ()  { return query('.ank-pixiv-downloaded-filename-text'); },
 
         // require for AnkBase.Viewer
-        get body () {
-          return queryAll('body')[0];
-        },
-        get mediumImage () {
-          return query('.css-1l839qm');
-        },
-        get imageOverlay () {
-          return query('.css-1l839qm');
-        },
-        get openCaption () {
-          return query('._1MskjZd');
-        },
+        get body ()         { return queryAll('body')[0]; },
+        get mediumImage ()  { return query('.css-1l839qm'); },
+        get imageOverlay () { return query('.css-1l839qm'); },
+        get openCaption ()  { return query('._1MskjZd'); },
 
         get ads () {
           const Ads = [
@@ -219,10 +160,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         },
         get size () {
           return undefined;
-        },
-        get pages () {
-          let e = self.elements.illust.pages;
-          return e ? e.textContent.split('/')[1] : 1;
         },
 
         get tags () {
@@ -532,13 +469,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           return false;   // リトライしてほしい
         }
 
-        let addRatingEventListener = function () {
-          let bm = self.element.illust.bookmark;
-          if (bm) {
-            let fn = function () { AnkBase.downloadCurrentImageAuto(self); };
-            bm.addEventListener('click', fn);
-          }
-        };
         // レイティングによるダウンロード
         if (AnkBase.Prefs.get('downloadWhenRate', false))
           addRatingEventListener();
