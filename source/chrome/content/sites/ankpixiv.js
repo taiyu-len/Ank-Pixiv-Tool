@@ -83,11 +83,11 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       const queryAll = q => self.elements.doc.querySelectorAll(q);
 
       let illust = {
-        get datetime ()   { return query(".sc-dRCTWM.jCIBGt"); },
-        get title ()      { return query('.sc-cgHJcJ.bVCFdy'); },
-        get comment ()    { return query('.sc-eNPDpu.japtga'); },
-        get userName ()   { return query('.sc-eNNmBn.idhvWW'); },
-        get memberLink () { return query('.sc-eNNmBn.idhvWW'); },
+        get datetime ()   { return query('.sc-fQkuQJ.eIeeDT'); },
+        get title ()      { return query('.sc-epGmkI.jTtkpr'); },
+        get comment ()    { return query('.sc-fCPvlr.YKSxC'); },
+        get userName ()   { return query('.sc-cqPOvA.dCDrOH'); },
+        get memberLink () { return query('.sc-cqPOvA.dCDrOH'); },
         get tags ()       { return queryAll('ul._3SAblVQ > li'); },
         get R18 ()        { return query('._3SAblVQ a[href*="R-18"]'); },
         // Unused
@@ -103,8 +103,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         get feedList ()           { return query('#stacc_timeline, #stacc_center_timeline'); },
         get rankingList ()        { return query('.ranking-items'); },
         get autoPagerizeTarget () { return queryAll('._unit'); },
-        get nextLink ()           { return query('._3FJ1FEb.Dn9Rstg'); },
-        get prevLink ()           { return query('._3FJ1FEb.WTz_C1E'); },
         get uiLayoutWest ()       { return query('.ui-layout-west'); },
 
         // require for AnkBase
