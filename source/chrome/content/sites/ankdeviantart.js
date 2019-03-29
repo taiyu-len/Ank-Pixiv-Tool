@@ -32,7 +32,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       get illustPage () {
         return self.info.illust.pageUrl.match(/^https?:\/\/(?:[^/]+\.)deviantart\.com\/(?:[^/]*\/)art\//);
       },
-    };$
+    };
 
     self.elements = (function () {
       const query    = q => self.elements.doc.querySelector(q);
