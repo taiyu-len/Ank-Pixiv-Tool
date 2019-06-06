@@ -45,7 +45,11 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
     closeDatabase: function () {
       let self = this;
       if (self.conn) {
-        self.conn.close().then(function () { this.conn=null }).catch(function (e) { AnkUtils.dumpError(e) });
+        self.conn.close().then(function () {
+          self.conn = null
+        }).catch(function (e) {
+          AnkUtils.dumpError(e)
+        });
       }
     },
 
