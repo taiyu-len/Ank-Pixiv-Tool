@@ -5,7 +5,6 @@ Components.utils.import("resource://gre/modules/Preferences.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
-Components.utils.import("resource:///modules/CustomizableUI.jsm");
 Components.utils.import("resource://gre/modules/Promise.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
