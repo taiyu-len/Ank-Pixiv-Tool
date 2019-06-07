@@ -1,3 +1,15 @@
+# My Fork of Ank-Pixiv-Tool
+Works with palemoon.
+
+Umatrix will prevent requests made by this, unless you view the uMatrix log, and
+unselect blocked requests in the "Behind The Scenes" section.
+
+
+
+
+
+Old readme vvv.
+
 # Ank-Pixiv-Tool
 
 [![Gitter](https://badges.gitter.im/anekos/Ank-Pixiv-Tool.svg)](https://gitter.im/anekos/Ank-Pixiv-Tool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)

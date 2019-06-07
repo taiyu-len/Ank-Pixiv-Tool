@@ -522,11 +522,11 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
          if (xhr.status == 200) {
            resolve(xhr.responseText);
          } else {
-           reject(new Error(xhr.statusText));
+           reject(new Error(`url: ${url} | ${xhr.statusText}`));
          }
        };
        xhr.onerror = function () {
-         reject(new Error(xhr.statusText));
+         reject(new Error(`url ${url} | ${xhr.statusText}`));
        };
        if (referer)
          xhr.setRequestHeader('Referer', referer);
