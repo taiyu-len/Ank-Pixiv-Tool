@@ -9,11 +9,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     var self = this;
 
     self.curdoc = doc;
-
     self.viewer;
-
     self.marked = false;
-
     self._functionsInstalled = false;
 
     /********************************************************************************
@@ -23,18 +20,11 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     self.in = {
       get manga () {
         let loc = self.info.illust.pageUrl;
-        return !!(
-          loc.match(/member_illust\.php\?/) &&
-          loc.match(/(?:&|\?)mode=manga(?:&|$)/) &&
-          loc.match(/(?:&|\?)illust_id=\d+(?:&|$)/));
+        return !!loc.match(/artworks\//);
       },
       get medium () {
         let loc = self.info.illust.pageUrl;
-        return !!(
-          loc.match(/member_illust\.php\?/) &&
-          loc.match(/(?:&|\?)mode=medium(?:&|$)/) &&
-          loc.match(/(?:&|\?)illust_id=\d+(?:&|$)/)
-        );
+        return !!loc.match(/artworks\//);
       },
       get illustPage () { return self.in.medium; },
     };
@@ -96,7 +86,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         boothId: undefined,
 
         get size () { return {width: illust.width, height: illust.height}; },
-        get shortTags () { return self.info.illust.tags; },
+        shortTags: [],
         get referer () { return self.info.illust.pageUrl; },
         animationFrames: undefined
       };
@@ -151,27 +141,13 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * ファンクションのインストール
      */
     initFunctions: function () {
-      // TODO reinit if url has changed
-      if (this._functionsInstalled)
-        return;
-
       this._functionsInstalled = true;
-
-      if (this.in.medium || this.in.manga) {
-        this.installMediumPageFunctions();
-      }
-      else {
-        this.installListPageFunctions();
-      }
     },
 
     /**
      * ダウンロード可能か
      */
     isDownloadable: function () {
-      if (!this._functionsInstalled)
-        return false;
-
       if (this.in.medium || this.in.manga)
         return { illust_id:this.getIllustId(), service_id:this.SERVICE_ID };
     },
@@ -180,8 +156,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストID
      */
     getIllustId: function () {
-      let m = this.curdoc.location.href.match(/illust_id=(\d+)/);
-      return m && parseInt(m[1], 10);
+      let m = this.info.illust.pageUrl.match(/\/artworks\/(\d+)/);
+      return m && m[1];
     },
 
     /**
@@ -238,7 +214,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     getImageUrlAsync: function () {
       let self = this;
       return Task.spawn(function* () {
-        const referer   = self.info.illust.pageUrl;
+        const referer   = self.info.illust.referer;
         const illust_id = self.info.illust.id;
         const url       = `https://www.pixiv.net/ajax/illust/${illust_id}`;
         function check(json) {
