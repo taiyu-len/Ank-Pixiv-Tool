@@ -263,9 +263,28 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         self.info.member.pixivId = user.screen_name;
         self.info.member.name    = user.name;
 
-        let images = tweet.entities.media.map(i => i.media_url_https + ":orig");
-        self.info.path.image = {images, facing:null, referer};
-        return self.info.path.image;
+        // video
+        try {
+          // select highest bitrate video
+          function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
+          function invalid(val)   { return !!val.bitrate; }
+          const variants = tweet.extended_entities.media.video_info.variants;
+          const selected = variants.filter(invalid).reduce(select_best);
+          const images   = [selected.url];
+          self.info.path.ext   = ".mp4";
+          self.info.path.image = {images, facing:null, referer};
+          return self.info.path.image;
+        } catch (e) {};
+
+        // regular images
+        try {
+          const images = tweet.entities.media.map(i => i.media_url_https + ":orig");
+          self.info.path.image = {images, facing:null, referer};
+          return self.info.path.image;
+        } catch (e) {};
+
+        // no image found
+        return {images:[], facing:null, referer};
       });
     },
 
