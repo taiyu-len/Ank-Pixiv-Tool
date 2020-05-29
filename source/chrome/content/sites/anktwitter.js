@@ -11,328 +11,66 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     self.viewer;
     self.marked = false;
     self._functionsInstalled = false;
-    self._image;
 
     /********************************************************************************
     * プロパティ
     ********************************************************************************/
 
-    self.in = { // {{{
-      get manga () {
-        return self.info.illust.mangaPages > 1;
+    self.in = {
+      manga: true,
+      get medium() { return !!self.getIllustId(); },
+      get illustPage() { return !!self.getIllustId(); }
+    };
+
+    self.elements = {
+      illust: {
+        get body() { return self.curdoc.querySelectorAll('body')[0]; },
+        ads:[]
       },
-      get medium () {
-        return self.in.illustPage;
+      get doc() { return self.curdoc; }
+    };
+
+    self.info = {
+      illust: {
+        get id() { return self.getIllustId(); },
+        get pageUrl() { return self.curdoc.location.href; },
+        get referer() { return self.info.illust.pageUrl; },
+
+        // set by getImageUrlAsync function
+        comment: undefined, // tweet text
+        dateTime: undefined,
+        mangaPages: undefined,
+        R18:undefined,
+
+        // empty
+        height: 0,
+        server: null,
+        shortTags: [],
+        size: null,
+        tags: [],
+        title: "",
+        tools: [],
+        width: 0,
+        worksData: null
       },
-      get illustPage () {
-        return self.in.tweet ||  // ツイート
-        self.in.gallery;  // ポップアップ中
+      member: {
+        // set by getImageUrlAsync function
+        id: undefined, // id_str
+        pixivId: undefined, // screen_name
+        name:undefined, // name
+
+        // not set
+        memoizedName: null
       },
-
-      /*
-       * 以下はモジュールローカル部品
-       */
-      get tweet () {
-        return self.info.illust.pageUrl.match(/^https?:\/\/twitter\.com\/[^/]+\/status\//);
-      },
-      get illustTweet() {
-        return self.elements.illust.mediumImage ||  // イラスト
-          self.elements.illust.animatedGif ||  // GIF
-          self.elements.illust.photoFrame;     // 外部画像連携
-      },
-      get videoTweet() {
-        return self.elements.illust.videoFrame;
-      },
-      get gallery () {
-        return self.elements.illust.galleryEnabled;
-      },
-    }; // }}}
-
-    const query    = (q) => self.curdoc.querySelector(q);
-    const queryAll = (q) => self.curdoc.querySelectorAll(q);
-
-    self.elements = (function () { // {{{
-      function queryEitherGorT (gQuery, tQuery) {
-        if (self.in.gallery)
-          return illust.gallery.querySelector(gQuery);
-        if (illust.tweet)
-          return illust.tweet.querySelector(tQuery);
-      }
-
-      function getCard2Frame () {
-        var x = (function (t) {
-          if (t) {
-            var e = t.querySelector('.card2 > div > iframe');
-            if (e) {
-              return { e, f: AnkUtils.trackbackParentNode(e, 2) }
-            }
-
-            e = t.querySelector('.card2 > div > div > iframe');
-            if (e) {
-              return { e, f: AnkUtils.trackbackParentNode(e, 3) }
-            }
-          }
-        })(illust.tweet);
-        if (x) {
-          var name = x.f.getAttribute('data-card2-name');
-          for (var i = 0; i < arguments.length; i++) {
-            if (name === arguments[i]) {
-              return x.e;
-            }
-          }
-        }
-      }
-
-      let illust =  {
-        // 外部画像連携
-        get photoFrame () {
-          return getCard2Frame('photo', 'summary_large_image');
-        },
-        get photoImage () {
-          var e = illust.photoFrame;
-          if (e) {
-            var name = e.getAttribute('data-card2-name');
-            if (name === 'photo') {
-              return e.contentDocument.querySelector('.u-block');
-            }
-            else {
-              return e.contentDocument.querySelector('div.tcu-imageWrapper > img');
-            }
-          }
-        },
-
-        // 自前画像(twimg)
-        get mediaContainer () {
-          let e = illust.tweet;
-          return e && e.querySelector('.AdaptiveMedia-container');
-        },
-
-        get mediaImage () {
-          let e = illust.mediaContainer;
-          return e && e.querySelector('.js-adaptive-photo img');
-        },
-
-        get mediaSet () {
-          let e = illust.mediaContainer;
-          return e && e.querySelectorAll('.js-adaptive-photo');
-        },
-
-        get animatedGif () {
-          return false;
-        },
-        get videoFrame () {
-          let e = illust.tweet;
-          return e && e.querySelector('.AdaptiveMedia-videoContainer .PlayableMedia--gif .PlayableMedia-player iframe');
-        },
-
-        get videoContent () {
-          let e = illust.videoFrame;
-          return e && e.contentDocument.querySelector('video');
-        },
-
-        get largeLink () {
-          return queryEitherGorT('.twitter-timeline-link', '.twitter-timeline-link');
-        },
-        get datetime () {
-          return queryEitherGorT('.tweet-timestamp', 'span.metadata > span');
-        },
-        get timestamp () {
-          return queryEitherGorT('._timestamp', '._timestamp');
-        },
-        get title () {
-          return queryEitherGorT('.tweet-text', '.tweet-text');
-        },
-        get comment () {
-          return self.elements.illust.title;
-        },
-        get avatar () {
-          return queryEitherGorT('.avatar', '.avatar');
-        },
-        get userName () {
-          return queryEitherGorT('.tweet', '.user-actions');
-        },
-        get memberLink () {
-          return queryEitherGorT('.account-group', '.account-group');
-        },
-        get tags () {
-          return null;
-        },
-        get tweet () {
-          return query('.tweet.permalink-tweet');
-        },
-        get gallery () {
-          return query('.Gallery-content');        // 画像ポップアップ
-        },
-        get galleryEnabled () {
-          return query('.gallery-enabled');
-        },
-        get galleryDatetime () {
-          return query('.Gallery-content a.tweet-timestamp');
-        },
-
-        // require for AnkBase
-        get downloadedDisplayParent () {
-          return queryEitherGorT('.stream-item-header', '.client-and-actions');
-        },
-        get downloadedFilenameArea () {
-          return query('.ank-pixiv-downloaded-filename-text');
-        },
-
-        // require for AnkBase.Viewer
-
-        get body () {
-          let e = queryAll('body');
-          return e && e.length > 0 && e[0];
-        },
-
-        get mediumImage () {
-          if (self.in.gallery)
-            return illust.gallery.querySelector('img.media-image');
-          if (illust.tweet)
-            return illust.mediaImage || illust.animatedGif || illust.photoImage;
-        },
-
-        get wrapper () {
-          return query('#page-outer');
-        },
-        get ads () {
-          return [];
-        }
-      };
-
-      return { illust, get doc () { return self.curdoc; }};
-    })(); // }}}
-
-    self.info = (function () { // {{{
-      let illust = {
-        get pageUrl () {
-          return self.elements.doc.location.href;
-        },
-        get id () {
-          return self.getIllustId();
-        },
-        get externalUrl () {
-          let e = self.elements.illust.largeLink;
-          return e && e.getAttribute('data-expanded-url');
-        },
-
-        get dateTime () {
-          let t = self.elements.illust.timestamp && self.elements.illust.timestamp.getAttribute('data-time');
-          if (t && (/^\d+$/).test(t)) {
-            let d = AnkUtils.getDecodedDateTime(new Date(parseInt(t)*1000));
-            return d;
-          }
-
-          let ms = self.elements.illust.timestamp && self.elements.illust.timestamp.getAttribute('data-time-ms');
-          if (ms && (/^\d+$/).test(ms)) {
-            let d = AnkUtils.getDecodedDateTime(new Date(parseInt(ms)));
-            return d;
-          }
-
-          let v = self.elements.illust.datetime.title;
-          return AnkUtils.decodeDateTimeText(v ? v : self.elements.illust.datetime.textContent);
-        },
-
-        get size () {
-          return null;
-        },
-
-        get tags () {
-          return [];
-        },
-
-        get shortTags () {
-          return [];
-        },
-
-        get tools () {
-          return null;
-        },
-
-        get width () {
-          return 0;
-        },
-
-        get height () {
-          return 0;
-        },
-
-        get server () {
-          return null;
-        },
-
-        get referer () {
-          return self.info.illust.pageUrl;
-        },
-
-        get title () {
-          return AnkUtils.trim(self.elements.illust.title.textContent);
-        },
-
-        get comment () {
-          return illust.title;
-        },
-
-        get R18 () {
-          return false;
-        },
-
-        get mangaPages () {
-          return self.info.path.image.images.length;
-        },
-
-        get worksData () {
-          return null;
-        }
-      };
-
-      let member = {
-        get id () {
-          return self.elements.illust.userName.getAttribute('data-user-id');
-        },
-
-        get pixivId () {
-          return self.elements.illust.userName.getAttribute('data-screen-name');
-        },
-
-        get name () {
-          return self.elements.illust.userName.getAttribute('data-name');
-        },
-
-        get memoizedName () {
-          return null;
-        }
-      };
-
-      let path = {
+      path: {
         get initDir () {
           return AnkBase.Prefs.get('initialDirectory.' + self.SITE_NAME);
         },
-
-        get ext () {
-          if (path.image.images.length > 0) {
-            let anchor = AnkUtils.getAnchor(path.image.images[0]);
-            if (anchor)
-              return AnkUtils.getFileExtension(anchor.pathname.match(/(\.\w+)(?::large|:orig)?$/) && RegExp.$1);
-          } else return undefined;
-        },
-
-        get mangaIndexPage () {
-          return null;
-        },
-
-        get image () {
-          return self._image;
-        }
-      };
-
-      return {
-        illust: illust,
-        member: member,
-        path: path
-      };
-    })();// }}}
-
+        // set by getImageUrlAsync function
+        image: undefined,
+        ext: ".jpg"
+      }
+    };
   }
 
 
@@ -370,100 +108,21 @@ Components.utils.import("resource://gre/modules/Task.jsm");
       var doc = this.curdoc;
 
       this._functionsInstalled = true;
-
-      var inits = function () {
-        if (self.in.medium) {
-          self.installMediumPageFunctions();
-        }
-        else {
-          self.installListPageFunctions();
-        }
-      };
-
-      // Illust/List共通のFunction
-      // ページ移動
-      var contentChange = function () {
-        let content = doc.querySelector('div.route-profile, div.route-permalink, div.route-home, div#doc');
-        if (!(content && doc.readyState === 'complete')) {
-          return false;   // リトライしてほしい
-        }
-
-        new MutationObserver(function (o) {
-          AnkUtils.dump('rise contentChange: '+self.curdoc.location.href);
-          self._image = null;  // 入れ替わりがあるので、ここでリセット
-          inits();
-        }).observe(content, {attributes: true});
-
-        return true;
-      };
-
-      // ギャラリーオープン
-      var galleryOpen = function () {
-        let body = doc.querySelector('body');
-        if (!(body && doc.readyState === 'complete')) {
-          return false;   // リトライしてほしい
-        }
-
-        new MutationObserver(function () {
-          let body = doc.querySelector('body');
-          AnkUtils.dump('rise galleryOpen: shown='+(body && body.classList.contains('gallery-enabled')));
-          self._image = null;  // 入れ替わりがあるので、ここでリセット
-        }).observe(body, {attributes: true});
-
-        return true;
-      };
-
-      // ギャラリー移動
-      let galleryChanged = function () {
-        let media = doc.querySelector('.GalleryTweet');
-        if (!(media && doc.readyState === 'complete')) {
-          return false;   // リトライしてほしい
-        }
-
-        // FIXME 移動後に、移動前のギャラリーの処理結果で表示が上書きされてしまう
-        new MutationObserver(function () {
-          AnkUtils.dump('rise galleryChanged');
-          self._image = null;  // 入れ替わりがあるので、ここでリセット
-
-          if (timeoutId)
-            clearTimeout(timeoutId);
-
-          timeoutId = setTimeout(function () {
-            let parent = media.querySelector('.content > .stream-item-header');
-            if (!parent)
-              return;
-
-            AnkBase.insertDownloadedDisplayById(
-              parent,
-              self.info.illust.R18,
-              self.info.illust.id,
-              self.SERVICE_ID
-            );
-          }, 100);
-        }).observe(media, {childList: true});
-
-        return true;
-      };
-
-      //
-
-      var timeoutId = null;
-
-      inits();
-
-      AnkBase.delayFunctionInstaller(contentChange, 500, 60, self.SITE_NAME, 'contentChange');
-      AnkBase.delayFunctionInstaller(galleryOpen, 500, 60, self.SITE_NAME, 'galleryOpen');
-      AnkBase.delayFunctionInstaller(galleryChanged, 500, 60, self.SITE_NAME, 'galleryChanged');
+      return;
+      /*
+      if (self.in.medium) {
+        self.installMediumPageFunctions();
+      }
+      else {
+        self.installListPageFunctions();
+      }*/
     },
 
     /**
      * ダウンロード可能か
      */
     isDownloadable: function () {
-      if (!this._functionsInstalled)
-        return false;
-
-      if (this.in.gallery || this.in.videoTweet || (this.in.tweet && this.in.illustTweet))  // ポップアップしている or イラストツイート
+      if (this.getIllustId())
         return { illust_id:this.getIllustId(), service_id:this.SERVICE_ID };
     },
 
@@ -471,7 +130,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * イラストID
      */
     getIllustId: function () {
-      return this.elements.illust.tweet.attributes["data-tweet-id"].value;
+      let id = this.info.illust.pageUrl.match(/status\/(\d+)/);
+      return id && id[1];
     },
 
     // FIXME イベント発火→ダウンロード開始の間にギャラリー移動があると目的のもと違う画像がダウンロードされる問題がある
@@ -516,9 +176,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     /*
      * 評価
      */
-    setRating: function () { // {{{
-      return true;
-    },
+    setRating: () => true,
 
     /********************************************************************************
      * 
@@ -529,124 +187,58 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      */
     getImageUrlAsync: function () {
       let self = this;
-
       return Task.spawn(function* () {
+        const referer   = self.info.illust.referer;
+        const illust_id = self.getIllustId();
+        const authorization = "Bearer " +
+          "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs" +
+          "%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
+        const cookies = self.curdoc.cookie;
 
-        // 取得済みならそのまま返す
-        if (self._image && self._image.images.length > 0)
-          return self._image;
+        // get x-csrf-token from cookie required to make api request.
+        const csrf_token = (() => {
+          let m = cookies.match(/ct0=(.*?)(?:;|$)/);
+          if (m) return m[1];
+          else throw new Error(`${url}:unable to find csrf token in cookies`);
+        })();
 
-        function setSelectedImage (image) {
-          self._image = image;
-          return image;
-        }
+        // get x-guest-token from cookie if it exists
+        const guest_token = (() => {
+          let m = cookies.match(/gt=(.*?)(?:;|$)/);
+          return m && m[1];
+        })();
 
-        if (self.in.gallery) {
-          // ギャラリーでは複数絵のtweetでも１枚しか表示されないので、tweetページを参照して全部持ってくる
-          let dt = self.elements.illust.galleryDatetime;
-          if (!dt)
-            return null;
+        // build extra headers required for using api.
+        const authtype = guest_token ? "x-guest-token" : "x-twitter-auth-type";
+        const authval  = guest_token ?    guest_token  : "OAuth2Session";
+        const headers = {
+          authorization,
+          "x-csrf-token": csrf_token,
+          [authtype]: authval
+        };
 
-          let href = dt.href;
-          let html = yield AnkUtils.httpGETAsync(href, self.curdoc.location.href);
-          let doc = AnkUtils.createHTMLDocument(html);
-          if (!doc)
-            return null;
-          let o = Array.slice(doc.querySelectorAll('.permalink-footer > .cards-media-container .multi-photo')).
-                    map(s => s.getAttribute('data-url'));
-          let m = self._convertImageUrls(o);
-          if (m.length > 1)
-            return setSelectedImage({ images: m, facing: null });
-        }
+        // make request
+        const url = `https://api.twitter.com/2/timeline/conversation/${illust_id}.json`;
+        const json = JSON.parse(yield AnkUtils.httpGETAsync(url, referer, headers));
 
-        return setSelectedImage(self._getImageUrl());
+        if (json.errors)
+          throw new Error(`${url}:${JSON.stringify(json.errors)}`);
+        const tweet = json.globalObjects.tweets[illust_id];
+        const user  = json.globalObjects.users[tweet.user_id_str];
+
+        self.info.illust.comment    = tweet.text;
+        self.info.illust.dateTime   = AnkUtils.getDecodedDateTime(new Date(tweet.created_at));
+        self.info.illust.mangaPages = tweet.entities.media.length;
+        self.info.illust.R18        = tweet.possibly_sensitive;
+
+        self.info.member.id      = user.id_str;
+        self.info.member.pixivId = user.screen_name;
+        self.info.member.name    = user.name;
+
+        let images = tweet.entities.media.map(i => i.media_url_https + ":orig");
+        self.info.path.image = {images, facing:null, referer};
+        return self.info.path.image;
       });
-    },
-
-    _getImageUrl: function () {
-      let self = this;
-
-      if (!self.in.gallery && self.in.videoTweet) {
-        let c = self.elements.illust.videoContent;
-        let m = [];
-        if (c.tagName.toLowerCase() === 'video') {
-          m.push(c.src);
-        }
-        else {
-          try {
-            JSON.parse(c.getAttribute('data-player-config'), function (key, value) {
-              if (key === 'source')
-                m.push(value);
-            });
-          }
-          catch (e) {
-            //
-          }
-        }
-        return { images: m, facing: null };
-      }
-
-      let e =
-        self.in.gallery                  ? self.elements.illust.mediumImage :
-        self.elements.illust.photoFrame  ? self.elements.illust.photoImage :
-        self.elements.illust.animatedGif ? self.elements.illust.animatedGif :
-                                           self.elements.illust.mediaSet;
-      if (!e)
-        return null;
-
-      let o = [];
-      if (e instanceof NodeList) {
-        // multi photo
-        AnkUtils.A(e).forEach(function (s) {
-          o.push(s.getAttribute('data-url') || s.getAttribute('data-image-url'));
-        });
-      }
-      else {
-        // photo or animatedGif
-        o.push(self.elements.illust.animatedGif ? e.getAttribute('video-src') : e.src);
-      }
-
-      let m = self._convertImageUrls(o);
-      if (!m)
-        return null;
-
-      return { images: m, facing: null };
-    },
-
-    _convertImageUrls: function (o) {
-      let urls = [];
-      o.forEach(function (s) {
-        let m = s.match(/\/proxy\.jpg\?.*?t=(.+?)(?:$|&)/);
-        if (m) {
-          try {
-            let b64 = m[1];
-            let b64dec = window.atob(b64.replace(/-/g,'+').replace(/_/g,'/'));
-            let index = b64dec.indexOf('http');
-            let lenb = b64dec.substr(0, index);
-            let len = lenb.charCodeAt(lenb.length-1);
-            s = b64dec.substr(index, len);
-
-            AnkUtils.dump('BASE64: '+b64);
-            AnkUtils.dump('DECODED: '+s);
-          }
-          catch (e) {
-            AnkUtils.dumpError(e);
-            window.alert(AnkBase.Locale.get('serverError'));
-            return null;
-          }
-        }
-        else {
-          s = s.replace(/:large/, '');
-          if (/^https?:\/\/pbs\.twimg\.com\/media\//.test(s)) {
-            if (!/\.\w+(:\w+)$/.test(s)) {
-              s += ':orig';
-            }
-          }
-        }
-        urls.push(s);
-      });
-
-      return urls;
     },
 
     /********************************************************************************
