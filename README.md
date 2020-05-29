@@ -4,13 +4,7 @@ Works with palemoon.
 Pixiv module has been mostly stripped down to simply being able to download
 galleries via the toolbar button or menu option. 
 
-Doesnt work with new twitter, and twitter doesnt like it when trying to use the
-API instead. old twitter can still be used if you set the useragent string.
-
-~~Umatrix will prevent requests made by this, unless you view the uMatrix log, and
-unselect blocked requests in the "Behind The Scenes" section.~~
-
-This was fixed in a more recent version of umatrix.
+now uses twitters api, so works with new twitter. RIP old twitter
 
 Old readme vvv.
 
