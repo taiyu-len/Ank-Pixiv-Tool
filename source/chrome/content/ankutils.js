@@ -507,11 +507,16 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
      });
    }, // }}}
 
-   httpGETAsync: function (url, referer) { // {{{
+   httpGETAsync: function (url, referer, headers) { // {{{
      let self = this;
      return new Promise((resolve, reject) => {
        let xhr = new XMLHttpRequest();
        xhr.open('GET', url, true);
+       xhr.withCredentials = true;
+       if (referer)
+         xhr.setRequestHeader('Referer', referer);
+       for (let h in headers)
+         xhr.setRequestHeader(h, headers[h]);
        try {
          xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal)
            .forceAllowThirdPartyCookie = self.Prefs.get('allowThirdPartyCookie');
@@ -528,8 +533,6 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
        xhr.onerror = function () {
          reject(new Error(`url ${url} | ${xhr.statusText}`));
        };
-       if (referer)
-         xhr.setRequestHeader('Referer', referer);
        xhr.send(null);
      });
    }, // }}}
