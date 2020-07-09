@@ -268,7 +268,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           // select highest bitrate video
           function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
           function invalid(val)   { return !!val.bitrate; }
-          const variants = tweet.extended_entities.media.video_info.variants;
+          const variants = tweet.extended_entities.media[0].video_info.variants;
           const selected = variants.filter(invalid).reduce(select_best);
           const images   = [selected.url];
           self.info.path.ext   = ".mp4";
