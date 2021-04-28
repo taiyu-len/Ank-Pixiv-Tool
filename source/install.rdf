@@ -114,7 +114,14 @@
     <em:optionsURL>chrome://ankpixiv/content/options.xul</em:optionsURL>
     <em:type>2</em:type>
 
-    <em:targetApplication>
+    <em:targetApplication><!-- Pale Moon -->
+        <Description>
+            <em:id>{8de7fcbb-c55c-4fbe-bfc5-fc555c87dbc4}</em:id>
+            <em:minVersion>28.0</em:minVersion>
+            <em:maxVersion>29.*</em:maxVersion>
+        </Description>
+    </em:targetApplication>
+    <em:targetApplication><!-- Firefox -->
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>38.0</em:minVersion>
