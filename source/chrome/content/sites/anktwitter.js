@@ -222,6 +222,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         // the one we need to get access to the media entries is.
         // `tweet_mode=extended`
         //
+        // {{{
         // include_profile_interstitial_type=1
         // include_blocking=1
         // include_blocked_by=1
@@ -246,6 +247,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         // count=20
         // ext=mediaStats%2ChighlightedLabel%2CcameraMoment
         // include_quote_count=true
+        // }}}
         const url = `https://api.twitter.com/2/timeline/conversation/${illust_id}.json?tweet_mode=extended`;
         const json = JSON.parse(yield AnkUtils.httpGETAsync(url, referer, headers));
 
@@ -267,7 +269,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         try {
           // select highest bitrate video
           function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
-          function invalid(val)   { return !!val.bitrate; }
+          function invalid(val)   { return val.bitrate != null; }
           const variants = tweet.extended_entities.media[0].video_info.variants;
           const selected = variants.filter(invalid).reduce(select_best);
           const images   = [selected.url];
