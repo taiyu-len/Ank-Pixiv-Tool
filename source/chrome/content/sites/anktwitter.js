@@ -101,21 +101,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
      * ファンクションのインストール
      */
     initFunctions: function () {
-      if (this._functionsInstalled)
-        return;
-
-      var self = this;
-      var doc = this.curdoc;
-
       this._functionsInstalled = true;
-      return;
-      /*
-      if (self.in.medium) {
-        self.installMediumPageFunctions();
-      }
-      else {
-        self.installListPageFunctions();
-      }*/
     },
 
     /**
@@ -142,7 +128,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
     downloadCurrentImage: function (useDialog, debug) {
       let self = this;
       Task.spawn(function *() {
-        let image = yield self.getImageUrlAsync(AnkBase.Prefs.get('downloadOriginalSize', false));
+        let image = yield self.getImageUrlAsync();
         if (!image || image.images.length == 0) {
           window.alert(AnkBase.Locale.get('cannotFindImages'));
           return;
@@ -265,28 +251,29 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         self.info.member.pixivId = user.screen_name;
         self.info.member.name    = user.name;
 
-        // video
-        try {
-          // select highest bitrate video
-          function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
-          function invalid(val)   { return val.bitrate != null; }
-          const variants = tweet.extended_entities.media[0].video_info.variants;
-          const selected = variants.filter(invalid).reduce(select_best);
-          const images   = [selected.url];
-          self.info.path.ext   = ".mp4";
-          self.info.path.image = {images, facing:null, referer};
-          return self.info.path.image;
-        } catch (e) {};
+        const no_images = {images:[], facing:null, referer};
 
-        // regular images
-        try {
-          const images = tweet.entities.media.map(i => i.media_url_https + ":orig");
-          self.info.path.image = {images, facing:null, referer};
-          return self.info.path.image;
-        } catch (e) {};
+        // check for media entries
+        if (!tweet.extended_entities) {
+          return no_images;
+        }
+        // check each image for video or image
+        const images = tweet.extended_entities.media.map(function (i){
+          if (i.type == "photo") {
+            return i.media_url_https + ":orig"
+          }
+          if (i.type == "video") {
+            function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
+            function invalid(val) { return val.bitrate != null; }
+            const variants = i.video_info.variants;
+            const selected = variants.filter(invalid).reduce(select_best);
+            return selected.url;
+          }
+          throw new Error(`${url}: Unknown media type "${i.type}"`);
+        });
+        self.info.path.image = {images, facing:null, referer};
+        return self.info.path.image;
 
-        // no image found
-        return {images:[], facing:null, referer};
       });
     },
 
