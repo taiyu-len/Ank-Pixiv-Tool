@@ -203,53 +203,84 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           [authtype]: authval
         };
 
-        // make request
-        // The options used by the browser client are the following.
-        // the one we need to get access to the media entries is.
-        // `tweet_mode=extended`
+        // make request as if by browser
+        // current api browser twitter uses graphql to get tweets.
+        // a horrible abomination
         //
-        // {{{
-        // include_profile_interstitial_type=1
-        // include_blocking=1
-        // include_blocked_by=1
-        // include_followed_by=1
-        // include_want_retweets=1
-        // include_mute_edge=1
-        // include_can_dm=1
-        // include_can_media_tag=1
-        // skip_status=1
-        // cards_platform=Web-12
-        // include_cards=1
-        // include_composer_source=true
-        // include_ext_alt_text=true
-        // include_reply_count=1
-        // tweet_mode=extended
-        // include_entities=true
-        // include_user_entities=true
-        // include_ext_media_color=true
-        // include_ext_media_availability=true
-        // send_error_codes=true
-        // simple_quoted_tweet=true
-        // count=20
-        // ext=mediaStats%2ChighlightedLabel%2CcameraMoment
-        // include_quote_count=true
-        // }}}
-        const url = `https://api.twitter.com/2/timeline/conversation/${illust_id}.json?tweet_mode=extended`;
+        // https://twitter.com/i/api/graphql/3XDB26fBve-MmjHaWTUZxA/TweetDetail?
+        // + hell
+        // see current url building
+        //
+        // tweet deck has includePromotedContent as false
+
+        // The structures passed into graphql api
+        const variables = {
+          focalTweetId: illust_id,
+          with_rux_injections:false,
+          includePromotedContent:false,
+          withCommunity:true,
+          withQuickPromoteEligibilityTweetFields:true,
+          withBirdwatchNotes:true,
+          withVoice:true,
+          withV2Timeline:true
+        }
+        const features = { // {{{
+          rweb_lists_timeline_redesign_enabled : true,
+          responsive_web_graphql_exclude_directive_enabled : true,
+          verified_phone_label_enabled : false,
+          creator_subscriptions_tweet_preview_api_enabled : true,
+          responsive_web_graphql_timeline_navigation_enabled : true,
+          responsive_web_graphql_skip_user_profile_image_extensions_enabled : false,
+          tweetypie_unmention_optimization_enabled : true,
+          responsive_web_edit_tweet_api_enabled : true,
+          graphql_is_translatable_rweb_tweet_is_translatable_enabled : false,
+          view_counts_everywhere_api_enabled : true,
+          longform_notetweets_consumption_enabled : true,
+          responsive_web_twitter_article_tweet_consumption_enabled : false,
+          tweet_awards_web_tipping_enabled : false,
+          freedom_of_speech_not_reach_fetch_enabled : true,
+          standardized_nudges_misinfo : true,
+          tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled : true,
+          longform_notetweets_rich_text_read_enabled : true,
+          longform_notetweets_inline_media_enabled : true,
+          responsive_web_media_download_video_enabled : false,
+          responsive_web_enhance_cards_enabled : false
+        }
+        const fieldToggles={withArticleRichContentState:false} // }}}
+
+        const url = "https://twitter.com/i/api/graphql/3XDB26fBve-MmjHaWTUZxA/TweetDetail?" +
+          `variables=${encodeURIComponent(JSON.stringify(variables))}` +
+          `&features=${encodeURIComponent(JSON.stringify(features))}` +
+          `&fieldToggles=${encodeURIComponent(JSON.stringify(fieldToggles))}`
+
         const json = JSON.parse(yield AnkUtils.httpGETAsync(url, referer, headers));
 
         if (json.errors)
           throw new Error(`${url}:${JSON.stringify(json.errors)}`);
-        const tweet = json.globalObjects.tweets[illust_id];
-        const user  = json.globalObjects.users[tweet.user_id_str];
 
-        self.info.illust.comment    = tweet.text;
+        // The main section we want in is this long ass shit
+        // data.
+        var result = json.data.threaded_conversation_with_injections_v2.
+          instructions.find(x => x.type == "TimelineAddEntries").
+          // tweet-$ids are the current, and parent posts.
+          // conversationthread-$ids are the replies.
+          // we want to find the matching tweet so...
+          entries.find(x => x.entryId == `tweet-${illust_id}`).
+          content.itemContent.tweet_results.result;
+        // these kinda tweeets put results we want one object down, may be more
+        if (result.__typename == "TweetWithVisibilityRusults")
+          result = result.tweet;
+        const tweet = result.legacy;
+        const user  = result.core.user_results.result;
+
+        self.info.illust.comment    = tweet.full_text;
         self.info.illust.dateTime   = AnkUtils.getDecodedDateTime(new Date(tweet.created_at));
         self.info.illust.mangaPages = tweet.entities.media.length;
         self.info.illust.R18        = tweet.possibly_sensitive;
 
-        self.info.member.id      = user.id_str;
-        self.info.member.pixivId = user.screen_name;
-        self.info.member.name    = user.name;
+        self.info.member.id      = user.rest_id;
+        self.info.member.pixivId = user.legacy.screen_name;
+        self.info.member.name    = user.legacy.name;
 
         const no_images = {images:[], facing:null, referer};
 
@@ -273,7 +304,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
         });
         self.info.path.image = {images, facing:null, referer};
         return self.info.path.image;
-
       });
     },
 
