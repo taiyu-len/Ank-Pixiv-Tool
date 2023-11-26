@@ -268,7 +268,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           entries.find(x => x.entryId == `tweet-${illust_id}`).
           content.itemContent.tweet_results.result;
         // these kinda tweeets put results we want one object down, may be more
-        if (result.__typename == "TweetWithVisibilityRusults")
+        if (result.__typename == "TweetWithVisibilityResults")
           result = result.tweet;
         const tweet = result.legacy;
         const user  = result.core.user_results.result;
