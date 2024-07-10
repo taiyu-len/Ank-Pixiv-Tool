@@ -304,7 +304,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
           if (i.type == "photo") {
             return i.media_url_https + ":orig"
           }
-          if (i.type == "video") {
+          if (i.type == "video" || i.type == "animated_gif") {
             function select_best(best, cur) { return cur.bitrate > best.bitrate ? cur : best; }
             function invalid(val) { return val.bitrate != null; }
             const variants = i.video_info.variants;
